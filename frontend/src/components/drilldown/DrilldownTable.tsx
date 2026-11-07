@@ -142,7 +142,7 @@ export function DrilldownTable() {
         aside={<span className="num text-xs text-slate-11">{isError && !data ? "Load failed" : isFetching ? data ? "Refreshing…" : "Loading…" : `${filtered.length} of ${data?.length ?? 0} rows · last 7d`}</span>}
       />
 
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border border-slate-6 bg-slate-2 px-3 py-2" data-testid="drilldown-breadcrumbs">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-4 py-3" data-testid="drilldown-breadcrumbs">
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <button
             type="button"
@@ -209,7 +209,7 @@ export function DrilldownTable() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search entities…"
               aria-label="Search campaigns, ad sets, and creatives"
-              className="h-7 border border-slate-6 bg-white pl-7 pr-2.5 text-xs text-slate-12 outline-none placeholder:text-slate-10 focus:border-slate-8"
+              className="h-9 w-[min(220px,45vw)] rounded-full border border-slate-5 bg-white pl-8 pr-3 text-xs text-slate-12 outline-none placeholder:text-slate-10 focus:border-jade-8"
               data-testid="drilldown-search-input"
             />
           </div>
@@ -261,7 +261,7 @@ export function DrilldownTable() {
         </div>
       )}
 
-      <div className="overflow-x-auto border border-slate-6 bg-white scrollbar-thin">
+      <div className="overflow-x-auto rounded-2xl border border-slate-5 bg-white scrollbar-thin">
         <table className="w-full min-w-[880px] border-collapse" data-testid="drilldown-table">
           <thead>
             <tr className="bg-slate-2">

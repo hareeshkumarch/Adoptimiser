@@ -17,8 +17,8 @@ function ExecutiveImpactStrip() {
   const portfolioLift = (run.portfolio?.revenue_lift ?? 0) * 2;
 
   return (
-    <div className="grid grid-cols-1 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-3" data-testid="executive-impact-strip">
-      <Link to="/diagnostics" className="group bg-white p-4 transition-colors ">
+    <div className="grid grid-cols-1 divide-y divide-slate-4 sm:grid-cols-3 sm:divide-x sm:divide-y-0" data-testid="executive-impact-strip">
+      <Link to="/diagnostics" className="group bg-transparent p-4 transition-colors sm:px-5">
         <div className="flex items-center justify-between text-xs text-slate-11">
           <span className="eyebrow flex items-center gap-1.5 text-ruby-11">
             <ShieldAlert size={12} /> Verified 14d Spend Bleed
@@ -31,7 +31,7 @@ function ExecutiveImpactStrip() {
         </p>
       </Link>
 
-      <Link to="/optimizations" className="group bg-white p-4 transition-colors ">
+      <Link to="/optimizations" className="group bg-transparent p-4 transition-colors sm:px-5">
         <div className="flex items-center justify-between text-xs text-slate-11">
           <span className="eyebrow flex items-center gap-1.5 text-jade-11">
             <TrendingUp size={12} /> Addressable 14d Upside
@@ -42,9 +42,9 @@ function ExecutiveImpactStrip() {
         <p className="mt-0.5 text-[11px] text-slate-11">{run.prescriptions.length} ranked prescriptions ready to simulate</p>
       </Link>
 
-      <Link to="/optimizations" className="group bg-white p-4 transition-colors ">
+      <Link to="/optimizations" className="group bg-transparent p-4 transition-colors sm:px-5">
         <div className="flex items-center justify-between text-xs text-slate-11">
-          <span className="eyebrow flex items-center gap-1.5 text-iris-11">
+          <span className="eyebrow flex items-center gap-1.5 text-jade-11">
             <Sparkles size={12} /> Portfolio MMM Equilibrium
           </span>
           <ArrowUpRight size={13} className="text-slate-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -74,7 +74,7 @@ function NarrativeBody() {
       {text.split(/\n\s*\n/).map((para, i, all) => (
         <p key={i} className={i === 0 ? "first-letter:float-left first-letter:mr-2 first-letter:font-serif first-letter:text-5xl first-letter:leading-[0.9]" : undefined}>
           {para}
-          {status === "running" && i === all.length - 1 && <span className="ml-0.5 inline-block h-4 w-[7px] translate-y-0.5 animate-blink bg-iris-9" />}
+          {status === "running" && i === all.length - 1 && <span className="ml-0.5 inline-block h-4 w-[7px] translate-y-0.5 animate-blink bg-jade-9" />}
         </p>
       ))}
     </div>
@@ -90,7 +90,7 @@ export function NarrativeSection() {
         index="01"
         kicker="Unified pulse & live narrative"
         title="Executive Pulse"
-        aside={busy ? <span className="inline-flex items-center gap-1.5 text-xs text-iris-11"><Loader2 size={13} className="animate-spin" /> {status === "starting" ? "Starting" : "Updating now"}</span> : undefined}
+        aside={busy ? <span className="inline-flex items-center gap-1.5 text-xs text-jade-11"><Loader2 size={13} className="animate-spin" /> {status === "starting" ? "Starting" : "Updating now"}</span> : undefined}
       />
       <div className="grid gap-6">
         <ExecutiveImpactStrip />

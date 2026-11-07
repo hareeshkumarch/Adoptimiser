@@ -152,7 +152,7 @@ function ConnectionWizardModal({ c }: { c: Connector }) {
               [2, "02 · Deduplicate"],
               [3, "03 · 60d Backfill"],
             ].map(([idx, label]) => (
-              <div key={idx} className={`px-3 py-1.5 ${step === idx ? "bg-iris-2 text-iris-11 font-medium" : "bg-white text-slate-10"}`}>
+              <div key={idx} className={`px-3 py-1.5 ${step === idx ? "bg-jade-2 text-jade-11 font-medium" : "bg-white text-slate-10"}`}>
                 {label}
               </div>
             ))}

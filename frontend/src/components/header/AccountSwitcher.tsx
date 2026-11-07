@@ -12,10 +12,10 @@ import type { Currency, Platform } from "../../types";
 const PLATFORMS: Platform[] = ["meta", "google", "tiktok", "linkedin"];
 const CURRENCIES: Currency[] = ["USD", "EUR", "GBP"];
 
-const ITEM = "flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-slate-12 data-[selected=true]:bg-slate-2";
+const ITEM = "flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-sm text-slate-12 data-[selected=true]:font-medium data-[selected=true]:text-jade-11";
 const GROUP = "[&_[cmdk-group-heading]]:eyebrow [&_[cmdk-group-heading]]:px-2.5 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-3";
 
-const Tick = ({ on }: { on: boolean }) => <Check size={14} className={on ? "ml-auto text-iris-11" : "ml-auto opacity-0"} />;
+const Tick = ({ on }: { on: boolean }) => <Check size={14} className={on ? "ml-auto text-jade-11" : "ml-auto opacity-0"} />;
 
 export function AccountSwitcher() {
   const [open, setOpen] = useState(false);
@@ -45,11 +45,11 @@ export function AccountSwitcher() {
       <Popover.Trigger asChild>
         <button
           type="button"
-          className="flex h-11 w-[150px] items-center gap-2 rounded-lg border border-slate-6 bg-white px-2 text-left transition-colors  data-[state=open]:border-iris-8 sm:w-[220px] sm:px-2.5 md:min-w-[260px]"
+          className="flex h-11 w-[150px] items-center gap-2.5 rounded-xl border border-slate-5 bg-white px-2.5 text-left transition-colors hover:border-slate-7 data-[state=open]:border-jade-8 sm:w-[220px] sm:px-3 md:min-w-[260px]"
           aria-label={`Data scope: ${label}, display currency ${currency}`}
           data-testid="account-switcher-trigger"
         >
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-slate-2">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-2">
             {platform ? <PlatformLogo platform={platform} size={15} /> : <Layers size={15} className="text-slate-10" />}
           </span>
           <span className="flex min-w-0 flex-1 flex-col leading-tight">
@@ -63,7 +63,7 @@ export function AccountSwitcher() {
         </button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content align="end" sideOffset={6} className="z-50 w-[min(360px,calc(100vw-1.5rem))] animate-fade-up rounded-xl border border-slate-6 bg-white ">
+        <Popover.Content align="end" sideOffset={7} className="z-50 w-[min(360px,calc(100vw-1.5rem))] animate-fade-up rounded-2xl border border-slate-5 bg-white p-1">
           <Command loop>
             <div className="relative border-b border-slate-6">
               <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-9" />

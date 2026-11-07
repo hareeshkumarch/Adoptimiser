@@ -49,7 +49,7 @@ export function ResponseCurveChart() {
               type="button"
               onClick={() => setSelected(p)}
               aria-pressed={activePlatform === p}
-              className={cn("pill", activePlatform === p && "border-iris-8 bg-iris-3 text-iris-11")}
+              className={cn("pill", activePlatform === p && "border-jade-7 bg-jade-2 text-jade-11")}
               data-testid={`curve-platform-${p}`}
             >
               <PlatformLogo platform={p} size={12} />

@@ -15,7 +15,7 @@ import { TraceLog } from "./TraceLog";
 
 const STATUS_TONE: Record<string, Tone> = { idle: "slate", loading: "slate", starting: "iris", running: "iris", completed: "jade", failed: "ruby" };
 const TAB =
-  "border-b-2 border-transparent px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-slate-11 transition-colors hover:text-slate-12 data-[state=active]:border-iris-9 data-[state=active]:text-slate-12";
+  "border-b-2 border-transparent px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-slate-11 transition-colors hover:text-slate-12 data-[state=active]:border-jade-9 data-[state=active]:text-slate-12";
 
 function QueryBox() {
   const { start, status } = useDeepAgent();
@@ -23,8 +23,8 @@ function QueryBox() {
   const busy = status === "loading" || status === "starting" || status === "running";
   const submit = () => !busy && query.trim() && start(query.trim());
   return (
-    <div className="border border-slate-6 bg-white focus-within:border-iris-8">
-      <div className="border-b border-slate-6 bg-slate-2 px-3 py-2.5" role="group" aria-label="Suggested investigations" data-testid="agent-preset-queries">
+    <div className="rounded-2xl border border-slate-5 bg-white focus-within:border-jade-8">
+      <div className="rounded-t-2xl border-b border-slate-5 bg-slate-2 px-4 py-3" role="group" aria-label="Suggested investigations" data-testid="agent-preset-queries">
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <span className="eyebrow">Suggested investigations</span>
           <span className="text-[10px] text-slate-10">Choose one to fill your request</span>
@@ -38,7 +38,7 @@ function QueryBox() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => setQuery(p.query)}
-                className={`rounded-full border px-2.5 py-1 font-mono text-[10px] transition-colors ${selected ? "border-slate-12 bg-slate-12 text-white" : "border-slate-6 bg-white text-slate-11  hover:text-slate-12"}`}
+                className={`rounded-full border px-3 py-1.5 font-mono text-[10px] transition-colors ${selected ? "border-slate-12 bg-slate-12 text-white" : "border-slate-5 bg-white text-slate-11 hover:text-slate-12"}`}
               >
                 {p.label}
               </button>
@@ -81,7 +81,7 @@ function RunMeta() {
   const runLabel = status === "starting" ? "Preparing investigation" : status === "running" ? "Live investigation" : run?.run_id ?? "—";
 
   return (
-    <div className="border border-slate-6 bg-white">
+    <div className="rounded-2xl border border-slate-5 bg-white">
       <div className="flex items-center justify-between px-4 py-3">
         <div>
           <p className="eyebrow">Run</p>
@@ -112,14 +112,14 @@ function RunMeta() {
           <Select.Root value={run?.run_id ?? ""} onValueChange={selectRun} disabled={busy}>
             <Select.Trigger
               aria-label="Choose an investigation run"
-              className="flex h-10 w-full items-center justify-between gap-3 rounded-lg border border-slate-6 bg-white px-3 text-left text-slate-12 outline-none transition-colors  focus:border-iris-8 disabled:cursor-not-allowed disabled:opacity-50 sm:w-[260px]"
+              className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-5 bg-white px-3.5 text-left text-slate-12 outline-none transition-colors focus:border-jade-8 disabled:cursor-not-allowed disabled:opacity-50 sm:w-[260px]"
               data-testid="agent-run-history-select"
             >
               <Select.Value placeholder="Choose a run" />
               <ChevronDown size={14} className="shrink-0 text-slate-10" />
             </Select.Trigger>
             <Select.Portal>
-              <Select.Content position="popper" sideOffset={4} className="z-50 max-h-[min(320px,calc(100vh-3rem))] w-[var(--radix-select-trigger-width)] min-w-[240px] overflow-hidden rounded-xl border border-slate-6 bg-white p-1 ">
+              <Select.Content position="popper" sideOffset={5} className="z-50 max-h-[min(320px,calc(100vh-3rem))] w-[var(--radix-select-trigger-width)] min-w-[240px] overflow-hidden rounded-2xl border border-slate-5 bg-white p-1.5">
                 <Select.Viewport>
                   {history.map((h) => {
                     const scope = h.scope.account_id
@@ -129,7 +129,7 @@ function RunMeta() {
                         : "All platforms";
                     const attribution = h.window === "data_driven" ? "Data-driven" : h.window === "1d_click" ? "1-day click" : "7-day click";
                     return (
-                      <Select.Item key={h.run_id} value={h.run_id} className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-slate-12 outline-none data-[highlighted]:bg-slate-2">
+                      <Select.Item key={h.run_id} value={h.run_id} className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-slate-12 outline-none data-[highlighted]:text-jade-11">
                         <Select.ItemText>
                           <span className="flex flex-col">
                             <span className="font-mono text-[11px]">{h.run_id}</span>
@@ -139,7 +139,7 @@ function RunMeta() {
                             </span>
                           </span>
                         </Select.ItemText>
-                        <Select.ItemIndicator className="ml-auto text-iris-11"><Check size={14} /></Select.ItemIndicator>
+                        <Select.ItemIndicator className="ml-auto text-jade-11"><Check size={14} /></Select.ItemIndicator>
                       </Select.Item>
                     );
                   })}
@@ -236,8 +236,8 @@ export function AgentWorkspace() {
           <TaskTree />
         </div>
       </div>
-      <Tabs.Root defaultValue="trace" className="flex flex-col border border-slate-6 bg-white lg:col-span-7">
-        <Tabs.List className="flex border-b border-slate-6">
+      <Tabs.Root defaultValue="trace" className="flex flex-col rounded-2xl border border-slate-5 bg-white lg:col-span-7">
+        <Tabs.List className="flex rounded-t-2xl border-b border-slate-5">
           <Tabs.Trigger value="trace" className={TAB} data-testid="agent-tab-trace">
             Reasoning trace
           </Tabs.Trigger>

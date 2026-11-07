@@ -46,7 +46,7 @@ export function CrossChannelTrendChart() {
               type="button"
               onClick={() => setMode(m.id)}
               aria-pressed={mode === m.id}
-              className={cn("pill", mode === m.id && "border-iris-8 bg-iris-3 text-iris-11")}
+              className={cn("pill", mode === m.id && "border-jade-7 bg-jade-2 text-jade-11")}
               data-testid={`trend-mode-${m.id}`}
             >
               {m.label}

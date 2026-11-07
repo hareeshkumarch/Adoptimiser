@@ -230,13 +230,13 @@ export function PrescriptionSection() {
       {scopedRun && (
         <>
           {(status === "starting" || status === "running") && (
-            <p className="mb-4 font-mono text-[11px] uppercase tracking-wider text-iris-11">
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-wider text-jade-11">
               Showing previous run · new investigation in progress
             </p>
           )}
           <div className="mb-6 grid grid-cols-1 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-3" data-testid="optimization-step-ledger">
             <div className="bg-white px-4 py-3">
-              <p className="eyebrow text-iris-11">Step 01 · Portfolio MMM Equilibrium</p>
+              <p className="eyebrow text-jade-11">Step 01 · Portfolio MMM Equilibrium</p>
               <p className="mt-0.5 text-xs text-slate-12">
                 Log-log response curves &amp; marginal ROAS frontier (+{money(scopedRun.portfolio?.revenue_lift ?? 0, currency, rate, true)}/wk)
               </p>
@@ -254,7 +254,7 @@ export function PrescriptionSection() {
           </div>
 
           {platform && (
-            <div className="mb-4 flex items-center justify-between border border-iris-6 bg-iris-2 px-4 py-2 text-xs text-iris-11">
+            <div className="mb-4 flex items-center justify-between border-l-2 border-jade-8 bg-jade-2 px-4 py-2.5 text-xs text-jade-11">
               <span>
                 Scoped to <strong>{PLATFORM_LABEL[platform]} Ads</strong> ({items.length} of {allItems.length} prescriptions)
               </span>

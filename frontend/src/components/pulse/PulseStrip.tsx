@@ -28,10 +28,10 @@ function KpiCell({ kpi, index }: { kpi: Kpi; index: number }) {
 
 export function PulseStrip() {
   const { data, isLoading, isError, refetch, isFetching } = usePulse();
-  if (!data && isLoading) return <div className="h-[300px] animate-pulse border border-slate-6 bg-slate-2" role="status" aria-label="Loading performance data" data-testid="pulse-loading" />;
+  if (!data && isLoading) return <div className="h-[300px] animate-pulse rounded-2xl border border-slate-5 bg-white" role="status" aria-label="Loading performance data" data-testid="pulse-loading" />;
   if (!data) {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 border border-ruby-6 bg-ruby-2 px-4 py-4" role="alert" data-testid="pulse-error">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ruby-6 bg-ruby-2 px-5 py-4" role="alert" data-testid="pulse-error">
         <p className="text-sm text-ruby-11">Performance data could not be loaded.</p>
         <button type="button" className="btn-ghost" onClick={() => refetch()} disabled={isFetching} data-testid="pulse-retry-button">
           <RefreshCw size={13} className={isFetching ? "animate-spin" : undefined} /> Try again
@@ -40,7 +40,7 @@ export function PulseStrip() {
     );
   }
   return (
-    <section className="border border-slate-6 bg-white" data-testid="pulse-strip">
+    <section className="overflow-hidden border border-slate-5 bg-white" data-testid="pulse-strip">
       {isError && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-6 bg-amber-2 px-4 py-2 text-xs text-amber-11" role="status">
           <span>Refresh failed. Showing the last available performance data.</span>
@@ -48,12 +48,12 @@ export function PulseStrip() {
         </div>
       )}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-6 px-4 py-3 sm:px-5">
-        <p className="eyebrow flex items-center gap-2"><span className="h-1.5 w-1.5 bg-jade-9" /> Unified pulse · last 7 days</p>
+        <p className="eyebrow flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-jade-9" /> Unified pulse · last 7 days</p>
         <p className="num text-[11px] text-slate-11" data-testid="pulse-period">
           {shortDate(data.period.start)} – {shortDate(data.period.end)} · normalized to USD · {data.period.window.replace("_", " ")}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-px bg-slate-6 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 divide-x divide-y divide-slate-4 sm:grid-cols-2 xl:grid-cols-4 xl:divide-y-0">
         {data.kpis.map((k, i) => (
           <KpiCell key={k.key} kpi={k} index={i} />
         ))}

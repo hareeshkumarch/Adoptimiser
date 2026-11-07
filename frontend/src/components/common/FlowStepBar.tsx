@@ -22,7 +22,7 @@ export function FlowStepBar({ next, summary }: Props) {
         <Link to={next.to} className="group inline-flex items-center gap-3 text-left" data-testid={`flow-next-${next.index}`}>
           <span>
             <span className="eyebrow block">Continue to</span>
-            <span className="mt-0.5 block text-sm font-medium text-slate-12 group-hover:text-iris-11">{next.label}</span>
+            <span className="mt-0.5 block text-sm font-medium text-slate-12 group-hover:text-jade-11">{next.label}</span>
             <span className="mt-0.5 block text-xs text-slate-10">{next.hint}</span>
           </span>
           <ArrowRight size={16} className="text-slate-9 transition-transform group-hover:translate-x-0.5" />

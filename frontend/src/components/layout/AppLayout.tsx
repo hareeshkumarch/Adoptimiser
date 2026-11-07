@@ -48,7 +48,7 @@ export function AppLayout() {
   const page = PAGE_COPY[pathname] ?? PAGE_COPY["/"];
   return (
     <div className="flex min-h-screen flex-col bg-slate-2">
-      <a href="#main-content" className="sr-only fixed left-3 top-3 z-50 bg-white px-3 py-2 text-sm text-slate-12 focus:not-sr-only focus:outline focus:outline-2 focus:outline-iris-9">
+      <a href="#main-content" className="sr-only fixed left-3 top-3 z-50 bg-white px-3 py-2 text-sm text-slate-12 focus:not-sr-only focus:outline focus:outline-2 focus:outline-jade-8">
         Skip to content
       </a>
       <AppHeader />

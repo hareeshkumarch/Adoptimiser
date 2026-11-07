@@ -126,7 +126,7 @@ export function RootCauseSection() {
         ) : undefined}
       />
       {platform && scopedRun && (
-        <div className="mb-4 flex items-center justify-between border border-iris-6 bg-iris-2 px-4 py-2 text-xs text-iris-11" data-testid="diagnostics-scope-banner">
+        <div className="mb-4 flex items-center justify-between border-l-2 border-jade-8 bg-jade-2 px-4 py-2.5 text-xs text-jade-11" data-testid="diagnostics-scope-banner">
           <span>
             Scoped to <strong>{PLATFORM_LABEL[platform]} Ads</strong> ({platformFindings.length} of {allFindings.length} verified findings)
           </span>
@@ -136,7 +136,7 @@ export function RootCauseSection() {
         </div>
       )}
       {platformFindings.length > 0 && (
-        <div className="mb-5 grid grid-cols-2 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-5" role="group" aria-label="Filter verified findings" data-testid="diagnostics-filter-cards">
+        <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter verified findings" data-testid="diagnostics-filter-cards">
           {filterCards.map((c) => (
             <button
               key={c.id}
@@ -144,16 +144,16 @@ export function RootCauseSection() {
               onClick={() => setDiagFilter(c.id)}
               aria-pressed={diagFilter === c.id}
               className={cn(
-                "bg-white p-3 text-left transition-colors ",
-                diagFilter === c.id && "bg-iris-2",
+                "inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 py-2 text-left transition-colors",
+                diagFilter === c.id
+                  ? "border-slate-12 bg-slate-12 text-white"
+                  : "border-slate-5 bg-white text-slate-11 hover:text-slate-12",
               )}
               data-testid={`diag-filter-card-${c.id}`}
             >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-slate-11">{c.label}</span>
-                <span className="num text-xs font-medium text-iris-11">{c.count}</span>
-              </div>
-              <p className="num mt-1 text-sm font-medium text-slate-12">{money(c.impact, currency, rate, true)}</p>
+              <span className="text-xs font-medium">{c.label}</span>
+              <span className={cn("num text-[11px]", diagFilter === c.id ? "text-white/75" : "text-jade-11")}>{c.count}</span>
+              <span className={cn("hidden border-l pl-2.5 text-[10px] sm:inline", diagFilter === c.id ? "border-white/20 text-white/75" : "border-slate-4 text-slate-10")}>{money(c.impact, currency, rate, true)}</span>
             </button>
           ))}
         </div>
@@ -161,12 +161,12 @@ export function RootCauseSection() {
       {!run && (status === "loading" || status === "starting" || status === "running") && <div className="h-40 animate-pulse border border-slate-6 bg-slate-2" />}
       {!run && status !== "loading" && status !== "starting" && status !== "running" && <RunEmptyState failed={status === "failed"} item="verified root causes" />}
       {run && !scopedRun && <p className="mb-4 border border-amber-6 bg-amber-2 px-4 py-3 text-xs leading-relaxed text-amber-11" role="status">The selected account, platform, campaign, or attribution window was not included in this investigation. Run it again for the current selection to see relevant findings.</p>}
-      {(status === "starting" || status === "running") && scopedRun && <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-iris-11">Showing previous run · new investigation in progress</p>}
+      {(status === "starting" || status === "running") && scopedRun && <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-jade-11">Showing previous run · new investigation in progress</p>}
       {scopedRun && platformFindings.length === 0 && <p className="mb-4 border border-slate-6 bg-white px-4 py-3 text-xs text-slate-11">No verified root causes were found for this analysis scope.</p>}
       {platformFindings.length > 0 && findings.length === 0 && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-slate-6 bg-white px-4 py-3 text-xs text-slate-11">
           <span>No verified findings match this filter.</span>
-          <button type="button" onClick={() => setDiagFilter("all")} className="font-medium text-iris-11 hover:text-iris-12">Show all findings</button>
+          <button type="button" onClick={() => setDiagFilter("all")} className="font-medium text-jade-11 hover:text-jade-12">Show all findings</button>
         </div>
       )}
       <div className="space-y-4">

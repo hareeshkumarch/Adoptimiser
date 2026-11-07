@@ -1,5 +1,5 @@
 import * as Select from "@radix-ui/react-select";
-import { ArrowLeftRight, Check, ChevronDown, Clock3, Lock, Layers } from "lucide-react";
+import { ArrowLeftRight, Check, ChevronDown, Clock3, Lock, Layers, SlidersHorizontal } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useFilters } from "../../state/filters";
 import type { AttributionWindow, Compare, Level } from "../../types";
@@ -47,7 +47,7 @@ function FilterSelect<T extends string>({
       <Select.Root value={value} onValueChange={(next) => onChange(next as T)}>
         <Select.Trigger
           aria-label={label}
-          className="flex h-10 w-full items-center justify-between gap-3 rounded-lg border border-slate-6 bg-white px-3 text-left text-[13px] text-slate-12 transition-colors  focus:border-iris-8 data-[state=open]:border-iris-8"
+          className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-5 bg-white px-3.5 text-left text-[13px] text-slate-12 transition-colors hover:border-slate-7 focus:border-jade-8 data-[state=open]:border-jade-8"
           data-testid={testId}
         >
           <span className="flex min-w-0 items-center gap-2.5">
@@ -57,13 +57,13 @@ function FilterSelect<T extends string>({
           <ChevronDown size={14} className="shrink-0 text-slate-10" />
         </Select.Trigger>
         <Select.Portal>
-          <Select.Content position="popper" sideOffset={5} className="z-50 w-[var(--radix-select-trigger-width)] min-w-[220px] rounded-xl border border-slate-6 bg-white p-1 ">
+          <Select.Content position="popper" sideOffset={6} className="z-50 w-[var(--radix-select-trigger-width)] min-w-[220px] rounded-2xl border border-slate-5 bg-white p-1.5">
             <Select.Viewport className="p-1">
               {options.map((option) => (
                 <Select.Item
                   key={option.value}
                   value={option.value}
-                  className="flex cursor-pointer items-start gap-3 rounded-lg px-2.5 py-2.5 text-slate-12 outline-none data-[highlighted]:bg-slate-2"
+                  className="flex cursor-pointer items-start gap-3 rounded-xl px-3 py-2.5 text-slate-12 outline-none data-[highlighted]:text-jade-11"
                   data-testid={`${optionTestIdPrefix ?? testId}-${option.value}`}
                 >
                   <span className="min-w-0 flex-1">
@@ -72,7 +72,7 @@ function FilterSelect<T extends string>({
                     </Select.ItemText>
                     <span className="mt-0.5 block text-[11px] leading-relaxed text-slate-10">{option.description}</span>
                   </span>
-                  <Select.ItemIndicator className="mt-0.5 text-iris-11">
+                  <Select.ItemIndicator className="mt-0.5 text-jade-11">
                     <Check size={14} />
                   </Select.ItemIndicator>
                 </Select.Item>
@@ -88,7 +88,11 @@ function FilterSelect<T extends string>({
 export function FilterBar({ showBreakdown = false }: { showBreakdown?: boolean }) {
   const { window, compare, level, update } = useFilters();
   return (
-    <section className="sticky top-16 z-20 mb-7 rounded-xl border border-slate-6 bg-slate-2 p-3 sm:p-4" aria-label="Analysis filters" data-testid="filter-bar">
+    <section className="sticky top-16 z-20 mb-7 border-y border-slate-5 bg-white/95 py-3.5 backdrop-blur-md" aria-label="Analysis filters" data-testid="filter-bar">
+      <div className="mb-3 flex items-center gap-2 px-1">
+        <SlidersHorizontal size={13} className="text-jade-10" />
+        <span className="eyebrow">Refine analysis</span>
+      </div>
       <div className="flex flex-wrap items-end gap-3 sm:gap-4">
         {showBreakdown && (
           <FilterSelect
@@ -120,7 +124,7 @@ export function FilterBar({ showBreakdown = false }: { showBreakdown?: boolean }
           testId="filter-pill-compare"
           width="w-full sm:w-[196px]"
         />
-        <p className="ml-auto hidden items-center gap-1.5 pb-2 text-[11px] text-slate-10 lg:flex" data-testid="read-only-badge">
+        <p className="ml-auto hidden items-center gap-1.5 px-1 pb-2 text-[11px] text-slate-10 lg:flex" data-testid="read-only-badge">
           <Lock size={12} /> Read-only reporting
         </p>
       </div>

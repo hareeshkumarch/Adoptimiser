@@ -19,7 +19,7 @@ interface Props {
 }
 
 export const StatusPill = ({ tone, children, className, testId }: Props) => (
-  <span data-testid={testId} className={cn("inline-flex h-5 items-center gap-1 border px-1.5 font-mono text-[10px] font-medium uppercase tracking-wider", TONES[tone], className)}>
+  <span data-testid={testId} className={cn("inline-flex h-6 items-center gap-1 rounded-full border px-2 font-mono text-[10px] font-medium uppercase tracking-wider", TONES[tone], className)}>
     {children}
   </span>
 );

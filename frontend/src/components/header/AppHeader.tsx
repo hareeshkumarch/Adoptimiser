@@ -13,7 +13,7 @@ function AgentStatusLink() {
   const label = status === "starting" ? "Starting investigation" : status === "running" ? "Investigation running" : status === "failed" ? "Last investigation failed" : lastRun;
   return (
     <Link to="/agent" className="hidden items-center gap-2 text-xs text-slate-10 transition-colors hover:text-slate-12 lg:flex" data-testid="header-agent-status">
-      <Activity size={14} className={status === "running" || status === "starting" ? "text-iris-9" : status === "failed" ? "text-ruby-9" : "text-slate-9"} />
+      <Activity size={14} className={status === "running" || status === "starting" ? "text-jade-9" : status === "failed" ? "text-ruby-9" : "text-slate-9"} />
       {label}
     </Link>
   );
@@ -24,14 +24,14 @@ export function AppHeader() {
   const busy = status === "loading" || status === "starting" || status === "running";
   const actionLabel = status === "loading" ? "Preparing…" : status === "starting" ? "Starting…" : status === "running" ? "Investigating…" : "Run full audit";
   return (
-    <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-1 border-b border-slate-6 bg-white px-2 py-2 sm:gap-2 sm:px-6" data-testid="app-header">
+    <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-1 border-b border-slate-5 bg-white/95 px-3 py-2 backdrop-blur-sm sm:gap-3 sm:px-6" data-testid="app-header">
       <div className="flex items-center gap-2.5">
         <MobileNavDrawer />
         <Link to="/" className="flex items-center gap-3" aria-label="Quorum home" data-testid="brand-home-link">
-          <span className="flex h-8 w-8 items-center justify-center bg-slate-12 font-serif text-lg font-medium text-white">Q</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-12 font-serif text-lg font-medium text-white">Q</span>
           <span className="hidden leading-tight min-[420px]:block">
-            <span className="block font-serif text-[19px] font-medium tracking-tight">Quorum</span>
-            <span className="hidden font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-slate-11 sm:block">Ad intelligence</span>
+            <span className="block font-serif text-[20px] font-medium tracking-tight">Quorum</span>
+            <span className="hidden font-mono text-[9px] font-medium uppercase tracking-[0.16em] text-slate-10 sm:block">Ad intelligence</span>
           </span>
         </Link>
       </div>

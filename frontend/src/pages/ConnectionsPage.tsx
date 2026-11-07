@@ -45,7 +45,7 @@ export default function ConnectionsPage() {
       <ol className="grid gap-px border border-slate-6 bg-slate-6 sm:grid-cols-3" data-testid="connect-flow-steps">
         {STEPS.map((s, i) => (
           <li key={s} className="bg-white p-5">
-            <span className="num text-xs text-iris-11">{String(i + 1).padStart(2, "0")}</span>
+            <span className="num text-xs text-jade-11">{String(i + 1).padStart(2, "0")}</span>
             <p className="mt-2 text-[13px] leading-relaxed text-slate-12">{s}</p>
           </li>
         ))}
