@@ -1,0 +1,54 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-slate-1 text-slate-12 font-sans;
+  }
+  ::selection {
+    background: var(--iris-5);
+    color: var(--slate-12);
+  }
+  :focus-visible {
+    outline: 1px solid var(--iris-9);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .num {
+    @apply font-mono tabular-nums tracking-tight;
+  }
+  .eyebrow {
+    @apply font-mono text-[11px] uppercase tracking-[0.14em] text-slate-11;
+  }
+  .hairline {
+    @apply border border-slate-6;
+  }
+  .pill {
+    @apply inline-flex h-7 items-center gap-1.5 border border-slate-6 bg-slate-1 px-2.5 text-xs text-slate-11 transition-colors duration-150 hover:bg-slate-3 hover:text-slate-12;
+  }
+  .pill[data-state="on"] {
+    @apply border-iris-8 bg-iris-3 text-iris-11;
+  }
+  .btn-primary {
+    @apply inline-flex h-8 items-center gap-2 bg-slate-12 px-3.5 text-xs font-medium text-slate-1 transition-colors duration-150 hover:bg-iris-11 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex h-8 items-center gap-2 border border-slate-6 bg-slate-1 px-3 text-xs text-slate-12 transition-colors duration-150 hover:bg-slate-3 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--slate-6);
+}

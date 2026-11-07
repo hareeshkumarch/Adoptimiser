@@ -1,0 +1,121 @@
+{
+  "project_info": {
+    "name": "Read-Only Multi-Channel Ad Intelligence & Deep-Agent Diagnostic Platform",
+    "stack": "React (JavaScript) + Tailwind CSS + Radix UI Primitives + Lucide Icons + Recharts",
+    "theme": "Single Light Theme - Minimalist High-Contrast Editorial Analytics",
+    "context_type": "Dashboard / Diagnostic Engine"
+  },
+  "design_philosophy": {
+    "style": "Ultra-clean, minimal, high-contrast editorial analytics",
+    "borders": "1px solid hairline borders (border border-slate-300 / border-slate-200)",
+    "surfaces": "Flat, sharp surfaces. ZERO gradients, ZERO neon glows, ZERO glassmorphism",
+    "typography_rule": "JetBrains Mono / font-mono for all tabular data, metrics, sparkline tooltips, and log traces. Clean Sans (Inter/System) for section headings and labels",
+    "spacing": "Generous and disciplined editorial density. Grid gap-4 to gap-6, card padding p-4 to p-6"
+  },
+  "color_palette": {
+    "app_bg": "#fcfcfc",
+    "app_bg_tailwind": "bg-[#fcfcfc] text-slate-900",
+    "slate": {
+      "step_1_app_bg": "#fcfcfc",
+      "step_2_card_bg": "#f8fafc",
+      "step_3_hover_bg": "#f1f5f9",
+      "step_6_border": "#cbd5e1",
+      "step_11_muted_text": "#64748b",
+      "step_12_primary_text": "#0f172a"
+    },
+    "accent_indigo_iris": {
+      "step_3_badge_bg": "#e0e7ff",
+      "step_9_indicator": "#4f46e5",
+      "step_11_accent_text": "#3730a3",
+      "badge_classes": "bg-indigo-50 text-indigo-700 border-indigo-200 font-mono text-xs"
+    },
+    "semantic_statuses": {
+      "healthy_jade": {
+        "text": "#047857",
+        "bg": "#ecfdf5",
+        "border": "#a7f3d0",
+        "classes": "bg-emerald-50 text-emerald-800 border-emerald-300"
+      },
+      "warning_amber": {
+        "text": "#b45309",
+        "bg": "#fffbeb",
+        "border": "#fde68a",
+        "classes": "bg-amber-50 text-amber-800 border-amber-300"
+      },
+      "critical_ruby": {
+        "text": "#be123c",
+        "bg": "#fff1f2",
+        "border": "#fecdd3",
+        "classes": "bg-rose-50 text-rose-800 border-rose-300"
+      }
+    }
+  },
+  "typography": {
+    "metrics_and_numbers": "font-mono font-medium tracking-tight tabular-nums",
+    "h1_title": "text-2xl font-bold tracking-tight text-slate-900",
+    "h2_section": "text-lg font-semibold tracking-tight text-slate-900",
+    "h3_card": "text-sm font-semibold text-slate-900 uppercase tracking-wider",
+    "body_text": "text-sm text-slate-700 leading-relaxed",
+    "muted_text": "text-xs text-slate-500 font-normal",
+    "code_trace": "font-mono text-xs text-slate-800 leading-snug"
+  },
+  "layout_grid": {
+    "header_bar": "h-14 border-b border-slate-300 bg-white px-6 flex items-center justify-between sticky top-0 z-40",
+    "sub_header_controls": "border-b border-slate-300 bg-slate-50 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3",
+    "pulse_kpi_strip": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 px-6 py-4 border-b border-slate-300 bg-white",
+    "main_dashboard_layout": "p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#fcfcfc]",
+    "left_column": "lg:col-span-7 space-y-6",
+    "right_column": "lg:col-span-5 space-y-6"
+  },
+  "key_views_and_components": {
+    "account_switcher": {
+      "type": "CMDK + Radix Popover",
+      "description": "Combobox selecting Platform (Meta, Google, TikTok, LinkedIn, All), Account ID, and Currency (USD, EUR, GBP, JPY). Must trigger instant data slice update across dashboard.",
+      "test_id": "account-switcher-trigger"
+    },
+    "connector_drawer": {
+      "type": "Radix Sheet / Dialog Side Drawer",
+      "description": "OAuth & Sandbox Connector Drawer displaying Meta Ads, Google Ads, TikTok Ads, LinkedIn Ads. Shows original platform SVG icons/badges, token validity countdown, sandbox mock toggle, and 'Re-Authenticate' action.",
+      "test_id": "connector-drawer-trigger"
+    },
+    "filter_pills": {
+      "type": "Radix ToggleGroup / Select",
+      "items": [
+        "Attribution Window: 1d click, 7d click, Data-Driven",
+        "Drilldown: Platform -> Campaign -> Ad Set -> Creative",
+        "Date Comparison: vs Previous Period, vs 30d Rolling Benchmark"
+      ],
+      "test_id_prefix": "filter-pill-"
+    },
+    "pulse_kpi_strip": {
+      "metrics": ["Blended ROAS", "Total Ad Spend", "Attributable Revenue", "CPM Bleed Index", "Cross-Channel Pacing Narrative"],
+      "features": "Monospace numbers, inline micro sparklines, delta percentage pills (+/-), cross-channel pacing text summary block"
+    },
+    "where_it_goes_wrong_root_causes": {
+      "title": "Where It Goes Wrong (Verified Root Causes)",
+      "structure": "Cards with severity indicator (Ruby/Amber), dollar bleed impact, anomaly confidence rating, and expandable Radix Accordion for Deep-Agent Evidence Chains (Ad Fatigue, Audience Saturation, Attribution Overlap, Bid Inefficiency)."
+    },
+    "what_optimizations_to_take": {
+      "title": "What Optimizations To Take (Prescriptions & Simulator)",
+      "structure": "Prescription list sorted by dollar impact + Radix Slider budget-shift simulator. Moving the budget slider dynamically calculates and previews simulated blended ROAS & projected revenue gain."
+    },
+    "live_agent_trace_ui": {
+      "title": "Live Deep-Agent Trace & Diagnostic Workspace",
+      "structure": "Split panel or Radix Tabs workspace with sub-agent nodes (Ingestion, Anomaly & Bleed Detector, Attribution & Cannibalization, Adversarial Critic), streaming planner TODO list, live tool call timeline, scratchpad files viewer, and final diagnostic verdicts."
+    }
+  },
+  "ad_platform_branding": {
+    "meta": { "name": "Meta Ads", "color": "#1877F2", "bg_badge": "bg-blue-50 text-blue-700 border-blue-200" },
+    "google": { "name": "Google Ads", "color": "#4285F4", "bg_badge": "bg-sky-50 text-sky-700 border-sky-200" },
+    "tiktok": { "name": "TikTok Ads", "color": "#000000", "bg_badge": "bg-slate-100 text-slate-900 border-slate-300" },
+    "linkedin": { "name": "LinkedIn Ads", "color": "#0A66C2", "bg_badge": "bg-indigo-50 text-indigo-700 border-indigo-200" }
+  },
+  "instructions_to_main_agent": [
+    "Build a fully interactive, production-grade Read-Only Ad Intelligence Diagnostic Dashboard in React (JavaScript).",
+    "Strictly follow the light high-contrast editorial theme: flat white/slate background, 1px solid hairline borders, font-mono for numbers.",
+    "Do NOT use gradients, glassmorphism, or heavy shadows.",
+    "Implement real working state across all controls: Account Switcher, Attribution Window toggle, Drilldown selector, Date comparison, Budget Slider simulator, Connector Drawer toggle, and Agent Trace filters.",
+    "Add 'data-testid' to every interactive button, tab, card, slider, input, popover trigger, and key metric for robust end-to-end testing.",
+    "Ensure responsive behavior: stack cleanly on mobile/tablet viewports without horizontal text clipping."
+  ]
+}
