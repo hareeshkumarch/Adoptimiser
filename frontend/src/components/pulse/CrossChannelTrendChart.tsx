@@ -39,12 +39,13 @@ export function CrossChannelTrendChart() {
             Daily normalized spend stack and efficiency ratios across active attribution window.
           </p>
         </div>
-        <div className="flex -space-x-px" data-testid="trend-chart-mode-toggle">
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Choose trend chart metrics" data-testid="trend-chart-mode-toggle">
           {MODES.map((m) => (
             <button
               key={m.id}
               type="button"
               onClick={() => setMode(m.id)}
+              aria-pressed={mode === m.id}
               className={cn("pill", mode === m.id && "border-iris-8 bg-iris-3 text-iris-11")}
               data-testid={`trend-mode-${m.id}`}
             >

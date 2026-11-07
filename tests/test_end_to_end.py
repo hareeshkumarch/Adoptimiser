@@ -193,7 +193,8 @@ class AdoptimiserEndToEndTests(unittest.IsolatedAsyncioTestCase):
             text=True,
             check=True,
         )
-        self.assertIn("TS_OK:102", proc.stdout)
+        ts_file_count = sum(1 for f in (ROOT / "frontend/src").rglob("*") if f.suffix in (".ts", ".tsx", ".js", ".jsx"))
+        self.assertIn(f"TS_OK:{ts_file_count}", proc.stdout)
 
     async def test_06_edge_cases_and_db_operator_parity(self):
         import pandas as pd

@@ -203,20 +203,20 @@ function ConnectionWizardModal({ c }: { c: Connector }) {
               <p className="text-xs text-slate-11">
                 Select accessible ad accounts to link. Accounts already linked under another login are automatically flagged to prevent double-counting spend.
               </p>
-              <div className="space-y-2">
+              <div className="space-y-2" role="group" aria-label="Select ad accounts to link">
                 {(discovery?.candidates ?? []).map((cand) => {
                   const checked = selectedIds.includes(cand.account_id);
                   return (
                     <label
                       key={cand.account_id}
-                      className="flex cursor-pointer items-center justify-between border border-slate-6 bg-slate-1 px-3.5 py-2.5 text-xs hover:bg-slate-2"
+                      className="flex cursor-pointer items-center justify-between rounded-lg border border-slate-6 bg-slate-1 px-3.5 py-2.5 text-xs "
                     >
                       <span className="flex items-center gap-2.5">
                         <input
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleId(cand.account_id)}
-                          className="h-3.5 w-3.5 accent-indigo-600"
+                          className="h-4 w-4 accent-slate-12"
                         />
                         <span>
                           <span className="block font-medium text-slate-12">{cand.name}</span>

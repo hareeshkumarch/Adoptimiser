@@ -1,18 +1,12 @@
-import json
-
 import pandas as pd
 
 from adintel.agents.base import SubAgent
+from adintel.agents.prompts import CRITIC_SYSTEM, build_critic_review_prompt
 from adintel.agents.state import RunState
 from adintel.analytics.metrics import jsonable
 from adintel.diagnostics.verification import CHECKS, REJECTION_REASON, Evidence, verdict
 
 CANDIDATE_FILES = ["/anomaly/candidates.json", "/attribution/candidates.json"]
-SYSTEM = (
-    "You are an adversarial verifier for paid-media diagnostics. For each finding you receive the detector's claim and "
-    "deterministic verification checks. Challenge the claim: name the strongest alternative explanation, state whether the "
-    "checks rule it out, and adjust confidence between -0.15 and +0.05. Be terse and quantitative."
-)
 DATE_FIELDS = ("recent_start", "base_start", "end")
 
 
@@ -45,10 +39,10 @@ class CriticAgent(SubAgent):
     async def _review(self, state: RunState, findings: list[dict]) -> dict:
         payload = [{"id": f["id"], "title": f["title"], "headline": f["headline"], "entity": f["entity_name"], "status": f["status"], "confidence": f["confidence"],
                     "evidence": [e["label"] for e in f["evidence"]], "checks": [{"label": c["label"], "passed": c["passed"], "detail": c["detail"]} for c in f["critic"]["checks"]]} for f in findings]
-        prompt = "Findings:\n" + json.dumps(jsonable(payload)) + '\nReturn {"reviews":[{"id":str,"challenge":str,"rationale":str,"adjustment":float}]}'
+        prompt = build_critic_review_prompt(jsonable(payload))
         result = await state.call_tool(
             self.name, "adversarial_llm_review", {"findings": len(findings)},
-            lambda: self.llm.complete_json(self.session(state), SYSTEM, prompt),
+            lambda: self.llm.complete_json(self.session(state), CRITIC_SYSTEM, prompt),
             lambda r: f"{len(r.get('reviews', []))} adversarial reviews",
         )
         return {r["id"]: r for r in result.get("reviews", []) if "id" in r}

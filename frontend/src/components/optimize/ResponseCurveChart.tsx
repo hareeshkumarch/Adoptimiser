@@ -12,12 +12,15 @@ const PLATFORMS: Platform[] = ["meta", "google", "tiktok", "linkedin"];
 export function ResponseCurveChart() {
   const { run } = useDeepAgent();
   const { currency, rate } = useCurrency();
-  const [selected, setSelected] = useState<Platform>("meta");
+  const [selected, setSelected] = useState<Platform | null>(null);
 
   const curves = run?.curves ?? {};
-  const activeCurve = curves[selected];
-  const grid = activeCurve?.grid ?? [];
-  if (!grid.length) return null;
+  const availablePlatforms = PLATFORMS.filter((platform) => curves[platform]?.grid.length);
+  const activePlatform = selected && availablePlatforms.includes(selected) ? selected : availablePlatforms[0];
+  if (!activePlatform) return null;
+  const activeCurve = curves[activePlatform];
+  if (!activeCurve?.grid.length) return null;
+  const grid = activeCurve.grid;
 
   const chartData = grid.map((pt) => ({
     ...pt,
@@ -39,13 +42,14 @@ export function ResponseCurveChart() {
             Expected weekly revenue R(S) = α·S^β and marginal ROAS (dR/dS) from 40% to 160% of current channel spend.
           </p>
         </div>
-        <div className="flex -space-x-px" data-testid="curve-platform-selector">
-          {PLATFORMS.filter((p) => curves[p]).map((p) => (
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Choose a platform for the response curve" data-testid="curve-platform-selector">
+          {availablePlatforms.map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => setSelected(p)}
-              className={cn("pill", selected === p && "border-iris-8 bg-iris-3 text-iris-11")}
+              aria-pressed={activePlatform === p}
+              className={cn("pill", activePlatform === p && "border-iris-8 bg-iris-3 text-iris-11")}
               data-testid={`curve-platform-${p}`}
             >
               <PlatformLogo platform={p} size={12} />
@@ -86,7 +90,7 @@ export function ResponseCurveChart() {
                 return (
                   <div className="border border-slate-12 bg-white p-2.5 font-mono text-[11px] text-slate-12">
                     <p className="mb-1 border-b border-slate-6 pb-1 text-slate-10">
-                      {PLATFORM_LABEL[selected]} · {label} ({money(pt.spend, currency, rate, true)}/wk)
+                      {PLATFORM_LABEL[activePlatform]} · {label} ({money(pt.spend, currency, rate, true)}/wk)
                     </p>
                     {payload.map((entry) => {
                       const val = Number(entry.value ?? 0);

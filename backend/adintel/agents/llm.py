@@ -6,6 +6,7 @@ from typing import AsyncIterator
 import httpx
 
 from adintel.config import get_settings
+from adintel.agents.prompts import JSON_RESPONSE_SUFFIX
 
 
 def classify_query_intent(query: str) -> dict:
@@ -262,7 +263,7 @@ class LlmGateway:
             await asyncio.sleep(0.01)
 
     async def complete_json(self, session_id: str, system: str, prompt: str) -> dict:
-        remote_text = await self._call_remote(system + " Respond with a single valid JSON object only.", prompt)
+        remote_text = await self._call_remote(system + JSON_RESPONSE_SUFFIX, prompt)
         if remote_text:
             match = re.search(r"\{.*\}", remote_text, re.DOTALL)
             if match:

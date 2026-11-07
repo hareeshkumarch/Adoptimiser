@@ -4,8 +4,10 @@ import { ChevronDown, Filter, X } from "lucide-react";
 import { useCurrency } from "../../hooks/queries";
 import { cn } from "../../lib/cn";
 import { money, PLATFORM_LABEL } from "../../lib/format";
+import { runMatchesScope } from "../../lib/runScope";
 import { useDeepAgent } from "../../state/deepAgent";
 import { useFilters } from "../../state/filters";
+import { RunEmptyState } from "../common/RunEmptyState";
 import { SectionHeader } from "../common/SectionHeader";
 import { StatusPill } from "../common/StatusPill";
 import { Logos, RootCauseCard } from "./RootCauseCard";
@@ -72,12 +74,13 @@ function RejectedPanel({ items }: { items: Finding[] }) {
 
 export function RootCauseSection() {
   const { run, status } = useDeepAgent();
-  const { platform, update } = useFilters();
+  const { platform, accountId, campaign, adsetId, window, update } = useFilters();
   const { currency, rate } = useCurrency();
   const [diagFilter, setDiagFilter] = useState<DiagFilter>("all");
 
-  const allFindings = run?.findings ?? [];
-  const allRejected = run?.rejected ?? [];
+  const scopedRun = run && runMatchesScope(run, platform, accountId, campaign, adsetId, window) ? run : null;
+  const allFindings = scopedRun?.findings ?? [];
+  const allRejected = scopedRun?.rejected ?? [];
   const platformFindings = allFindings.filter((f) => matchesPlatform(f, platform));
   const findings = platformFindings.filter((f) => matchesDiagFilter(f, diagFilter));
   const rejected = allRejected.filter((f) => matchesPlatform(f, platform));
@@ -116,13 +119,13 @@ export function RootCauseSection() {
         index="02"
         kicker="Verified root-cause tree"
         title="Root-Cause Audit"
-        aside={
+        aside={scopedRun ? (
           <span className="num text-xs text-slate-11" data-testid="root-cause-count">
             {platformFindings.length} verified · {rejected.length} filtered
           </span>
-        }
+        ) : undefined}
       />
-      {platform && (
+      {platform && scopedRun && (
         <div className="mb-4 flex items-center justify-between border border-iris-6 bg-iris-2 px-4 py-2 text-xs text-iris-11" data-testid="diagnostics-scope-banner">
           <span>
             Scoped to <strong>{PLATFORM_LABEL[platform]} Ads</strong> ({platformFindings.length} of {allFindings.length} verified findings)
@@ -133,15 +136,16 @@ export function RootCauseSection() {
         </div>
       )}
       {platformFindings.length > 0 && (
-        <div className="mb-5 grid grid-cols-2 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-5" data-testid="diagnostics-filter-cards">
+        <div className="mb-5 grid grid-cols-2 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-5" role="group" aria-label="Filter verified findings" data-testid="diagnostics-filter-cards">
           {filterCards.map((c) => (
             <button
               key={c.id}
               type="button"
               onClick={() => setDiagFilter(c.id)}
+              aria-pressed={diagFilter === c.id}
               className={cn(
-                "bg-white p-3 text-left transition-colors hover:bg-slate-2",
-                diagFilter === c.id && "bg-iris-2 shadow-[inset_0_-2px_0_var(--iris-9)]",
+                "bg-white p-3 text-left transition-colors ",
+                diagFilter === c.id && "bg-iris-2",
               )}
               data-testid={`diag-filter-card-${c.id}`}
             >
@@ -154,8 +158,17 @@ export function RootCauseSection() {
           ))}
         </div>
       )}
-      {!run && <div className="h-40 animate-pulse border border-slate-6 bg-slate-2" />}
-      {status === "running" && run && <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-iris-11">Showing previous run · new investigation in progress</p>}
+      {!run && (status === "loading" || status === "starting" || status === "running") && <div className="h-40 animate-pulse border border-slate-6 bg-slate-2" />}
+      {!run && status !== "loading" && status !== "starting" && status !== "running" && <RunEmptyState failed={status === "failed"} item="verified root causes" />}
+      {run && !scopedRun && <p className="mb-4 border border-amber-6 bg-amber-2 px-4 py-3 text-xs leading-relaxed text-amber-11" role="status">The selected account, platform, campaign, or attribution window was not included in this investigation. Run it again for the current selection to see relevant findings.</p>}
+      {(status === "starting" || status === "running") && scopedRun && <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-iris-11">Showing previous run · new investigation in progress</p>}
+      {scopedRun && platformFindings.length === 0 && <p className="mb-4 border border-slate-6 bg-white px-4 py-3 text-xs text-slate-11">No verified root causes were found for this analysis scope.</p>}
+      {platformFindings.length > 0 && findings.length === 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-slate-6 bg-white px-4 py-3 text-xs text-slate-11">
+          <span>No verified findings match this filter.</span>
+          <button type="button" onClick={() => setDiagFilter("all")} className="font-medium text-iris-11 hover:text-iris-12">Show all findings</button>
+        </div>
+      )}
       <div className="space-y-4">
         {findings.map((f, i) => (
           <RootCauseCard key={f.id} f={f} index={i} />

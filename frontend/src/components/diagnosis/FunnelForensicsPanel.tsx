@@ -45,7 +45,7 @@ export function FunnelForensicsPanel() {
             {rows.map((r) => {
               const meta = BOTTLENECK_META[r.primary_bottleneck] ?? { label: r.primary_bottleneck, tone: "slate" as Tone };
               return (
-                <tr key={r.platform} className="border-t border-slate-6 hover:bg-slate-2" data-testid={`forensic-row-${r.platform}`}>
+                <tr key={r.platform} className="border-t border-slate-6 " data-testid={`forensic-row-${r.platform}`}>
                   <td className="px-4 py-2.5 text-xs text-slate-12">
                     <span className="flex items-center gap-2">
                       <PlatformLogo platform={r.platform} size={14} />

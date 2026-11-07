@@ -1,12 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef, type ReactNode } from "react";
 import { api, subscribeRun } from "../lib/api";
+import { DEFAULT_AGENT_QUERY } from "../constants/prompts";
 import { useFilters } from "./filters";
 import type { AgentEvent, AgentRun, RecursionGuard, ScratchFile, Todo } from "../types";
 
 export type AgentStatus = "pending" | "running" | "done";
-export type RunStatus = "idle" | "loading" | "running" | "completed" | "failed";
+export type RunStatus = "idle" | "loading" | "starting" | "running" | "completed" | "failed";
 
-export const DEFAULT_QUERY = "Run a full cross-channel diagnostic: find where budget is bleeding, verify root causes and rank optimizations by dollar impact.";
+export const DEFAULT_QUERY = DEFAULT_AGENT_QUERY;
 
 export interface LiveProgress {
   percentage: number;
@@ -47,6 +48,7 @@ interface State {
 
 type Action =
   | { type: "loading" }
+  | { type: "starting" }
   | { type: "start" }
   | { type: "event"; event: AgentEvent }
   | { type: "loaded"; run: AgentRun | null }
@@ -162,6 +164,8 @@ function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "loading":
       return { ...state, status: "loading" };
+    case "starting":
+      return { ...state, status: "starting", error: null };
     case "start":
       return { ...INITIAL, status: "running", run: state.run, progress: { ...DEFAULT_PROGRESS, percentage: 4 }, startedAt: new Date().toISOString() };
     case "event":
@@ -184,26 +188,46 @@ export function DeepAgentProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL);
   const filters = useFilters();
   const unsubscribe = useRef<(() => void) | null>(null);
+  const runRequestInFlight = useRef(false);
 
   const follow = useCallback((runId: string) => {
+    runRequestInFlight.current = true;
     unsubscribe.current?.();
     dispatch({ type: "start" });
     unsubscribe.current = subscribeRun(
       runId,
-      (event) => dispatch({ type: "event", event }),
-      (error) => dispatch({ type: "failed", error }),
+      (event) => {
+        if (event.type === "run_complete" || event.type === "run_failed") runRequestInFlight.current = false;
+        dispatch({ type: "event", event });
+      },
+      (error) => {
+        runRequestInFlight.current = false;
+        dispatch({ type: "failed", error });
+      },
     );
   }, []);
 
   const start = useCallback(
     (query: string) => {
-      const body = { query, scope: { platform: filters.platform, account_id: filters.accountId }, window: filters.window };
-      api.startRun(body).then(follow, (err: Error) => dispatch({ type: "failed", error: err.message }));
+      if (runRequestInFlight.current) return;
+      runRequestInFlight.current = true;
+      dispatch({ type: "starting" });
+      const body = {
+        query,
+        scope: { platform: filters.platform, account_id: filters.accountId, campaign: filters.campaign, adset_id: filters.adsetId },
+        window: filters.window,
+      };
+      api.startRun(body).then(follow).catch((err: Error) => {
+        runRequestInFlight.current = false;
+        dispatch({ type: "failed", error: err.message });
+      });
     },
-    [filters.platform, filters.accountId, filters.window, follow],
+    [filters.platform, filters.accountId, filters.campaign, filters.adsetId, filters.window, follow],
   );
 
   const selectRun = useCallback((runId: string) => {
+    runRequestInFlight.current = false;
+    unsubscribe.current?.();
     dispatch({ type: "loading" });
     api.getRun(runId).then(
       (run) => dispatch({ type: "loaded", run }),

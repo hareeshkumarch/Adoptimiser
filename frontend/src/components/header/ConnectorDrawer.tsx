@@ -39,7 +39,7 @@ export function ConnectorDrawer() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-slate-12/20" />
         <Dialog.Content
-          className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-slate-6 bg-white p-6 shadow-none focus:outline-none"
+          className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-slate-6 bg-white p-6  focus:outline-none"
           data-testid="connector-drawer-content"
         >
           <div className="flex items-center justify-between border-b border-slate-6 pb-4">

@@ -6,13 +6,12 @@ import { EvaluationPanel } from "../components/evaluation/EvaluationPanel";
 
 export default function DiagnosticsPage() {
   return (
-    <div className="space-y-12" data-testid="page-diagnostics">
+    <div className="space-y-9" data-testid="page-diagnostics">
       <RootCauseSection />
       <AnomalyZScoreChart />
       <FunnelForensicsPanel />
       <EvaluationPanel />
       <FlowStepBar
-        prev={{ to: "/", index: "01", label: "Executive Pulse", hint: "KPIs & narrative" }}
         next={{ to: "/optimizations", index: "03", label: "Action & Allocation", hint: "Simulate budget shifts" }}
       />
     </div>

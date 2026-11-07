@@ -103,7 +103,7 @@ export function RootCauseCard({ f, index }: { f: Finding; index: number }) {
   return (
     <article
       className={cn(
-        "animate-fade-up border border-slate-6 bg-white transition-colors duration-150 hover:border-slate-8",
+        "animate-fade-up border border-slate-6 bg-white transition-colors duration-150 ",
         f.severity === "critical" ? "border-l-2 border-l-ruby-9" : "border-l-2 border-l-amber-9",
       )}
       style={{ animationDelay: `${index * 60}ms` }}

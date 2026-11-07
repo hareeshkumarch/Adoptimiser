@@ -106,7 +106,7 @@ export function TraceLog() {
     <Accordion.Root type="multiple" value={open} onValueChange={setOpen} data-testid="trace-accordion">
       {groups.map(([agent, items]) => (
         <Accordion.Item key={agent} value={agent} className="border-b border-slate-6">
-          <Accordion.Trigger className="group flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs hover:bg-slate-2" data-testid={`trace-group-${agent}`}>
+          <Accordion.Trigger className="group flex w-full items-center gap-2 px-4 py-2.5 text-left text-xs " data-testid={`trace-group-${agent}`}>
             <ChevronRight size={13} className="text-slate-10 transition-transform duration-200 group-data-[state=open]:rotate-90" />
             <span className={cn("flex-1", agents[agent] === "running" ? "text-iris-11" : "text-slate-12")}>{AGENT_LABEL[agent] ?? agent}</span>
             <span className="num text-[10px] text-slate-10">{items.filter((i) => i.type === "tool_call").length} tools</span>

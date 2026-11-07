@@ -1,56 +1,41 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, GitBranch, Loader2, Shield } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { useDeepAgent } from "../../state/deepAgent";
-import { StatusPill } from "../common/StatusPill";
 
 export function LiveProgressBanner() {
-  const { status, progress, run } = useDeepAgent();
-  if (status === "idle" || status === "loading") return null;
+  const { status, progress } = useDeepAgent();
+  if (status !== "starting" && status !== "running" && status !== "failed") return null;
 
+  const isStarting = status === "starting";
   const isRunning = status === "running";
-  const guard = progress.recursionGuard;
-
+  const isFailed = status === "failed";
   return (
-    <div className="border-b border-slate-6 bg-white px-6 py-2" data-testid="live-progress-banner">
-      <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 text-xs">
-          {isRunning ? (
-            <Loader2 size={13} className="animate-spin text-iris-11" />
-          ) : (
-            <CheckCircle2 size={13} className="text-jade-11" />
-          )}
-          <span className="font-mono text-[11px] font-medium text-slate-12" data-testid="live-progress-stage">
-            {progress.stageLabel}
-          </span>
-          {isRunning && progress.activeTool && (
-            <span className="num text-[11px] text-iris-11">→ {progress.activeTool}()</span>
-          )}
+    <div className={`border-b px-4 py-2.5 sm:px-6 ${isFailed ? "border-ruby-6 bg-ruby-2" : "border-iris-6 bg-iris-2"}`} role={isFailed ? "alert" : "status"} aria-live="polite" data-testid="live-progress-banner">
+      <div className="mx-auto flex max-w-[1480px] flex-wrap items-center gap-x-3 gap-y-2">
+        {isFailed ? <AlertCircle size={15} className="text-ruby-11" /> : <Loader2 size={15} className="animate-spin text-iris-11" />}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-slate-12" data-testid="live-progress-stage">
+            {isStarting ? "Preparing your investigation…" : isRunning ? progress.stageLabel : "The investigation could not be completed."}
+          </p>
+          {isRunning && progress.activeTool && <p className="mt-0.5 truncate text-[11px] text-slate-10">Working on {progress.activeTool}</p>}
         </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {guard && (
-            <span className="num inline-flex items-center gap-1.5 border border-slate-6 bg-slate-2 px-2 py-0.5 text-[10px] text-slate-11" data-testid="recursion-guard-badge">
-              <Shield size={10} className="text-iris-11" />
-              {guard.pass_label} · {guard.superstep_label} · Visits {guard.node_visits}/{guard.node_budget}
-            </span>
-          )}
-          <StatusPill tone={isRunning ? "iris" : "jade"} testId="live-progress-pct">
-            {progress.percentage}%
-          </StatusPill>
-          <span className="num hidden text-[11px] text-slate-11 sm:inline">
-            {run?.findings.length ?? progress.findingsCount} verified · conf {Math.round(progress.confidence * 100)}%
-          </span>
-          <Link to="/agent" className="font-mono text-[10px] uppercase tracking-wider text-iris-11 hover:underline">
-            <GitBranch size={11} className="mr-0.5 inline" /> Studio
-          </Link>
-        </div>
+        {isRunning && <span className="num text-xs text-slate-11" data-testid="live-progress-pct">{progress.percentage}%</span>}
+        <Link to="/agent" className="inline-flex items-center gap-1 text-xs font-medium text-slate-12 hover:text-iris-11" data-testid="live-progress-details">
+          View investigation <ArrowRight size={13} />
+        </Link>
       </div>
-      <div className="mx-auto mt-1.5 h-[3px] max-w-[1240px] bg-slate-4">
+      {isRunning && (
         <div
-          className={`h-full transition-all duration-300 ${isRunning ? "bg-iris-9" : "bg-jade-9"}`}
-          style={{ width: `${progress.percentage}%` }}
-        />
-      </div>
+          className="mx-auto mt-2 h-0.5 max-w-[1480px] bg-iris-4"
+          role="progressbar"
+          aria-label="Investigation progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress.percentage}
+        >
+          <div className="h-full bg-iris-9 transition-all duration-300" style={{ width: `${progress.percentage}%` }} />
+        </div>
+      )}
     </div>
   );
 }

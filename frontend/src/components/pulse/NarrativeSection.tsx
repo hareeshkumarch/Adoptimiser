@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, ShieldAlert, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowUpRight, Loader2, ShieldAlert, Sparkles, TrendingUp } from "lucide-react";
 import { useCurrency } from "../../hooks/queries";
 import { money } from "../../lib/format";
 import { useDeepAgent } from "../../state/deepAgent";
 import { SectionHeader } from "../common/SectionHeader";
-import { StatusPill } from "../common/StatusPill";
 import { CrossChannelTrendChart } from "./CrossChannelTrendChart";
 import { PlatformMixBar } from "./PlatformMixBar";
 
@@ -19,7 +18,7 @@ function ExecutiveImpactStrip() {
 
   return (
     <div className="grid grid-cols-1 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-3" data-testid="executive-impact-strip">
-      <Link to="/diagnostics" className="group bg-white p-4 transition-colors hover:bg-slate-2">
+      <Link to="/diagnostics" className="group bg-white p-4 transition-colors ">
         <div className="flex items-center justify-between text-xs text-slate-11">
           <span className="eyebrow flex items-center gap-1.5 text-ruby-11">
             <ShieldAlert size={12} /> Verified 14d Spend Bleed
@@ -32,7 +31,7 @@ function ExecutiveImpactStrip() {
         </p>
       </Link>
 
-      <Link to="/optimizations" className="group bg-white p-4 transition-colors hover:bg-slate-2">
+      <Link to="/optimizations" className="group bg-white p-4 transition-colors ">
         <div className="flex items-center justify-between text-xs text-slate-11">
           <span className="eyebrow flex items-center gap-1.5 text-jade-11">
             <TrendingUp size={12} /> Addressable 14d Upside
@@ -43,7 +42,7 @@ function ExecutiveImpactStrip() {
         <p className="mt-0.5 text-[11px] text-slate-11">{run.prescriptions.length} ranked prescriptions ready to simulate</p>
       </Link>
 
-      <Link to="/optimizations" className="group bg-white p-4 transition-colors hover:bg-slate-2">
+      <Link to="/optimizations" className="group bg-white p-4 transition-colors ">
         <div className="flex items-center justify-between text-xs text-slate-11">
           <span className="eyebrow flex items-center gap-1.5 text-iris-11">
             <Sparkles size={12} /> Portfolio MMM Equilibrium
@@ -61,11 +60,12 @@ function ExecutiveImpactStrip() {
 
 function NarrativeBody() {
   const { status, narrative, run } = useDeepAgent();
-  const text = narrative || (status === "running" ? "" : run?.narrative ?? "");
-  if (!text && status === "running")
+  const busy = status === "starting" || status === "running";
+  const text = narrative || (busy ? "" : run?.narrative ?? "");
+  if (!text && busy)
     return (
       <p className="font-serif text-lg italic text-slate-11">
-        The LangGraph orchestrator is gathering evidence from its sub-agents. The narrative will stream here once findings are verified…
+        {status === "starting" ? "Starting the investigation and preparing its data scope…" : "Gathering evidence across your ad accounts. The narrative will appear here as findings are verified…"}
       </p>
     );
   if (!text) return <p className="text-sm text-slate-11">Run the deep agent to synthesize the cross-channel narrative.</p>;
@@ -83,13 +83,14 @@ function NarrativeBody() {
 
 export function NarrativeSection() {
   const { status } = useDeepAgent();
+  const busy = status === "starting" || status === "running";
   return (
     <section data-testid="section-what-is-happening">
       <SectionHeader
         index="01"
         kicker="Unified pulse & live narrative"
         title="Executive Pulse"
-        aside={status === "running" ? <StatusPill tone="iris">Streaming</StatusPill> : <StatusPill tone="slate">LangGraph synthesis</StatusPill>}
+        aside={busy ? <span className="inline-flex items-center gap-1.5 text-xs text-iris-11"><Loader2 size={13} className="animate-spin" /> {status === "starting" ? "Starting" : "Updating now"}</span> : undefined}
       />
       <div className="grid gap-6">
         <ExecutiveImpactStrip />

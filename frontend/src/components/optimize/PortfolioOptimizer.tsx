@@ -48,7 +48,7 @@ export function PortfolioOptimizer() {
               const positive = row.delta_spend > 10;
               const negative = row.delta_spend < -10;
               return (
-                <tr key={row.platform} className="border-t border-slate-6 hover:bg-slate-2" data-testid={`portfolio-row-${row.platform}`}>
+                <tr key={row.platform} className="border-t border-slate-6 " data-testid={`portfolio-row-${row.platform}`}>
                   <td className="px-4 py-2.5 text-xs text-slate-12">
                     <span className="flex items-center gap-2">
                       <PlatformLogo platform={row.platform} size={14} />

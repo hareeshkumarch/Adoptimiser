@@ -6,7 +6,7 @@ import { useDeepAgent } from "../state/deepAgent";
 export default function OverviewPage() {
   const { run } = useDeepAgent();
   return (
-    <div className="space-y-12" data-testid="page-overview">
+    <div className="space-y-9" data-testid="page-overview">
       <PulseStrip />
       <NarrativeSection />
       <FlowStepBar

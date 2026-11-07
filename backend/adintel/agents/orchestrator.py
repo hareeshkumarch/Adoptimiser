@@ -4,6 +4,7 @@ from typing import Any
 from adintel.agents.graph import END, START, CompiledStateGraph, StateGraph
 from adintel.agents.llm import LlmGateway, classify_query_intent
 from adintel.agents.planner import Planner
+from adintel.agents.prompts import SYNTHESIS_SYSTEM
 from adintel.agents.state import RunState
 from adintel.agents.subagents.anomaly import AnomalyAgent
 from adintel.agents.subagents.attribution import AttributionAgent
@@ -13,14 +14,6 @@ from adintel.agents.subagents.forensics import ForensicsAgent
 from adintel.agents.subagents.ingestion import IngestionAgent
 from adintel.agents.subagents.optimizer import OptimizerAgent
 from adintel.analytics.metrics import jsonable
-
-SYNTHESIS_SYSTEM = (
-    "You are the orchestrator of a read-only ad intelligence deep agent writing the cross-channel pacing narrative for a "
-    "performance marketing lead. Plain prose, no markdown, no bullet points, 110-160 words, editorial and quantitative. "
-    "Cover: overall pacing and blended efficiency, the verified root causes in order of dollar impact, what the critic filtered "
-    "out as false positives, and the single most important move this week. Use only the numbers given."
-)
-
 
 class Orchestrator:
     name = "orchestrator"

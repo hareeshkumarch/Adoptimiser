@@ -48,7 +48,7 @@ export function BudgetSimulator({ sim, curves, testId }: Props) {
           <Slider.Track className="relative h-[3px] flex-1 bg-slate-5">
             <Slider.Range className="absolute h-full bg-iris-9" />
           </Slider.Track>
-          <Slider.Thumb className="block h-4 w-4 border border-iris-9 bg-white transition-transform duration-100 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-iris-7" />
+          <Slider.Thumb className="block h-4 w-4 border border-iris-9 bg-white transition-transform duration-100  focus:outline-none focus-visible:ring-2 focus-visible:ring-iris-7" />
         </Slider.Root>
         <span className="num w-12 text-right text-sm text-slate-12" data-testid={`${testId}-pct`}>
           {Math.round(share * 100)}%

@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, RotateCcw, Search } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, RefreshCw, RotateCcw, Search } from "lucide-react";
 import { useBreakdown, useCurrency } from "../../hooks/queries";
 import { cn } from "../../lib/cn";
 import { money, num, pct, PLATFORM_LABEL, ratio } from "../../lib/format";
@@ -45,12 +45,12 @@ function Row({ r, level, onDrill }: { r: BreakdownRow; level: Level; onDrill: (r
       }}
       onClick={() => canDrill && onDrill(r)}
       className={cn(
-        "group border-t border-slate-6 transition-colors duration-100 hover:bg-slate-2",
+        "group border-t border-slate-6 transition-colors duration-100 ",
         canDrill && "cursor-pointer focus:bg-slate-2 focus:outline-none",
       )}
       data-testid={`drilldown-row-${r.id}`}
     >
-      <td className="sticky left-0 z-10 max-w-[260px] bg-white px-3 py-2.5 group-hover:bg-slate-2">
+      <td className="sticky left-0 z-10 max-w-[260px] bg-white px-3 py-2.5 ">
         <div className="flex items-center gap-2">
           <PlatformLogo platform={r.platform} size={14} />
           <div className="min-w-0 flex-1">
@@ -83,7 +83,7 @@ function Row({ r, level, onDrill }: { r: BreakdownRow; level: Level; onDrill: (r
 
 export function DrilldownTable() {
   const { level, platform, campaign, adsetId, adsetName, update, resetDrilldown } = useFilters();
-  const { data, isFetching } = useBreakdown();
+  const { data, isFetching, isError, isLoading, refetch } = useBreakdown();
   const [sortKey, setSortKey] = useState<SortKey>("spend");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [search, setSearch] = useState("");
@@ -139,7 +139,7 @@ export function DrilldownTable() {
         index="04"
         kicker="Platform → Campaign → Ad Set → Creative"
         title={`Drilldown by ${LEVEL_LABEL[level]}`}
-        aside={<span className="num text-xs text-slate-11">{isFetching ? "refreshing…" : `${filtered.length} of ${data?.length ?? 0} rows · last 7d`}</span>}
+        aside={<span className="num text-xs text-slate-11">{isError && !data ? "Load failed" : isFetching ? data ? "Refreshing…" : "Loading…" : `${filtered.length} of ${data?.length ?? 0} rows · last 7d`}</span>}
       />
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border border-slate-6 bg-slate-2 px-3 py-2" data-testid="drilldown-breadcrumbs">
@@ -208,11 +208,12 @@ export function DrilldownTable() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search entities…"
+              aria-label="Search campaigns, ad sets, and creatives"
               className="h-7 border border-slate-6 bg-white pl-7 pr-2.5 text-xs text-slate-12 outline-none placeholder:text-slate-10 focus:border-slate-8"
               data-testid="drilldown-search-input"
             />
           </div>
-          <div className="flex -space-x-px">
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Quick filters">
             {(
               [
                 { id: "all", label: "All" },
@@ -225,6 +226,7 @@ export function DrilldownTable() {
                 key={q.id}
                 type="button"
                 onClick={() => setQuick(q.id)}
+                aria-pressed={quick === q.id}
                 data-state={quick === q.id ? "on" : "off"}
                 className="pill h-7 px-2 text-[11px]"
                 data-testid={`drilldown-quick-${q.id}`}
@@ -250,6 +252,15 @@ export function DrilldownTable() {
         </div>
       </div>
 
+      {isError && data && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border border-amber-6 bg-amber-2 px-4 py-2.5 text-xs text-amber-11" role="status" data-testid="drilldown-stale-data">
+          <span>Refresh failed. Showing the last available results.</span>
+          <button type="button" onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-1.5 font-medium hover:underline">
+            <RefreshCw size={12} className={isFetching ? "animate-spin" : undefined} /> Try again
+          </button>
+        </div>
+      )}
+
       <div className="overflow-x-auto border border-slate-6 bg-white scrollbar-thin">
         <table className="w-full min-w-[880px] border-collapse" data-testid="drilldown-table">
           <thead>
@@ -274,10 +285,23 @@ export function DrilldownTable() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {isError && !data ? (
+              <tr>
+                <td colSpan={10} className="px-4 py-8 text-center" data-testid="drilldown-error-row">
+                  <div className="flex flex-col items-center gap-2 text-xs text-ruby-11" role="alert">
+                    <span className="inline-flex items-center gap-1.5"><AlertCircle size={13} /> Campaign data could not be loaded.</span>
+                    <button type="button" onClick={() => refetch()} disabled={isFetching} className="btn-ghost h-7 px-2">Try again</button>
+                  </div>
+                </td>
+              </tr>
+            ) : isLoading && !data ? (
+              <tr>
+                <td colSpan={10} className="px-4 py-8 text-center font-mono text-xs text-slate-10" role="status">Loading entities…</td>
+              </tr>
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={10} className="px-4 py-8 text-center font-mono text-xs text-slate-10" data-testid="drilldown-empty-row">
-                  No entities match the current filter criteria.
+                  {data?.length === 0 ? "No entities are available for this scope." : "No entities match the current filter criteria."}
                 </td>
               </tr>
             ) : (

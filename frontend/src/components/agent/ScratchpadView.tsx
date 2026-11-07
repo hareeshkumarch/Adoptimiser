@@ -53,7 +53,7 @@ export function ScratchpadView() {
           const Icon = KIND_ICON[f.kind];
           return (
             <Accordion.Item key={f.path} value={f.path} className="border-t border-slate-6">
-              <Accordion.Trigger className="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-slate-2" data-testid={`scratchpad-file-${f.path}`}>
+              <Accordion.Trigger className="flex w-full items-center gap-2 px-4 py-2 text-left " data-testid={`scratchpad-file-${f.path}`}>
                 <Icon size={13} className="text-slate-10" />
                 <span className="flex-1 truncate font-mono text-[11px] text-slate-12">{f.path}</span>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-iris-11">{f.author}</span>

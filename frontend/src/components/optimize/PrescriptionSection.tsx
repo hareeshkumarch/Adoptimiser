@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ClipboardCopy, Download, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrency } from "../../hooks/queries";
 import { money, PLATFORM_LABEL } from "../../lib/format";
+import { runMatchesScope } from "../../lib/runScope";
 import { useDeepAgent } from "../../state/deepAgent";
 import { useFilters } from "../../state/filters";
 import { ConfidenceMeter } from "../common/ConfidenceMeter";
+import { RunEmptyState } from "../common/RunEmptyState";
 import { SectionHeader } from "../common/SectionHeader";
 import { severityTone, StatusPill } from "../common/StatusPill";
 import { IMPACT_LABEL, Logos } from "../diagnosis/RootCauseCard";
@@ -68,7 +70,7 @@ function PrescriptionCard({
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => setCheckedSteps((prev) => ({ ...prev, [idx]: !isChecked }))}
-                    className="mt-1 h-3.5 w-3.5 shrink-0 accent-indigo-600"
+                    className="mt-1 h-3.5 w-3.5 shrink-0 accent-slate-12"
                   />
                   <span className={isChecked ? "text-slate-12" : "line-through text-slate-10"}>{s}</span>
                 </li>
@@ -164,7 +166,7 @@ function ExecutionRunbook({ items }: { items: Prescription[] }) {
           </thead>
           <tbody>
             {items.map((rx, i) => (
-              <tr key={rx.id} className="border-t border-slate-6 hover:bg-slate-2" data-testid={`runbook-row-${i + 1}`}>
+              <tr key={rx.id} className="border-t border-slate-6 " data-testid={`runbook-row-${i + 1}`}>
                 <td className="num px-3 py-2.5 text-slate-10">0{i + 1}</td>
                 <td className="px-3 py-2.5 text-slate-12">{PLATFORM_LABEL[rx.platform]}</td>
                 <td className="px-3 py-2.5 font-sans text-xs text-slate-12">{rx.title}</td>
@@ -183,12 +185,15 @@ function ExecutionRunbook({ items }: { items: Prescription[] }) {
 }
 
 export function PrescriptionSection() {
-  const { run } = useDeepAgent();
-  const { platform, update } = useFilters();
-  const allItems = run?.prescriptions ?? [];
+  const { run, status } = useDeepAgent();
+  const { platform, accountId, campaign, adsetId, window, update } = useFilters();
+  const scopedRun = run && runMatchesScope(run, platform, accountId, campaign, adsetId, window) ? run : null;
+  const allItems = scopedRun?.prescriptions ?? [];
   const items = allItems.filter((rx) => matchesPlatform(rx, platform));
   const [excludedIds, setExcludedIds] = useState<string[]>([]);
   const { currency, rate } = useCurrency();
+
+  useEffect(() => setExcludedIds((current) => current.length ? [] : current), [run?.run_id, platform, accountId, campaign, adsetId, window]);
 
   const stagedItems = items.filter((rx) => !excludedIds.includes(rx.id));
   const total = stagedItems.reduce((s, r) => s + r.dollar_impact, 0);
@@ -203,58 +208,84 @@ export function PrescriptionSection() {
         index="03"
         kicker="Prescriptions & impact simulator"
         title="Action & Allocation"
-        aside={
+        aside={scopedRun ? (
           <span className="num text-xs text-slate-11" data-testid="prescriptions-total">
             {money(total, currency, rate, true)} addressable · ranked by $ × confidence
           </span>
-        }
+        ) : undefined}
       />
 
-      <div className="mb-6 grid grid-cols-1 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-3" data-testid="optimization-step-ledger">
-        <div className="bg-white px-4 py-3">
-          <p className="eyebrow text-iris-11">Step 01 · Portfolio MMM Equilibrium</p>
-          <p className="mt-0.5 text-xs text-slate-12">
-            Log-log response curves &amp; marginal ROAS frontier (+{money(run?.portfolio?.revenue_lift ?? 0, currency, rate, true)}/wk)
-          </p>
-        </div>
-        <div className="bg-white px-4 py-3">
-          <p className="eyebrow text-jade-11">Step 02 · Interactive Simulator &amp; Staging</p>
-          <p className="mt-0.5 text-xs text-slate-12">
-            {stagedItems.length} of {items.length} prescriptions staged ({money(total, currency, rate, true)} 14d impact)
-          </p>
-        </div>
-        <div className="bg-white px-4 py-3">
-          <p className="eyebrow text-slate-12">Step 03 · Read-Only Execution Runbook</p>
-          <p className="mt-0.5 text-xs text-slate-12">Exportable Markdown &amp; bulk CSV specification with 48h guardrails</p>
-        </div>
-      </div>
-
-      {platform && (
-        <div className="mb-4 flex items-center justify-between border border-iris-6 bg-iris-2 px-4 py-2 text-xs text-iris-11">
-          <span>
-            Scoped to <strong>{PLATFORM_LABEL[platform]} Ads</strong> ({items.length} of {allItems.length} prescriptions)
-          </span>
-          <button type="button" onClick={() => update({ platform: null, accountId: null })} className="font-mono text-[10px] uppercase hover:underline">
-            Show all platforms
-          </button>
-        </div>
+      {!run && (status === "loading" || status === "starting" || status === "running") && (
+        <div className="h-40 animate-pulse border border-slate-6 bg-slate-2" role="status" aria-label="Preparing optimization analysis" />
       )}
-      <PortfolioOptimizer />
-      <ResponseCurveChart />
-      {!run && <div className="h-40 animate-pulse border border-slate-6 bg-slate-2" />}
-      <div className="space-y-4">
-        {items.map((rx, i) => (
-          <PrescriptionCard
-            key={rx.id}
-            rx={rx}
-            rank={i + 1}
-            curves={run?.curves ?? {}}
-            staged={!excludedIds.includes(rx.id)}
-            onToggleStaged={() => toggleStaged(rx.id)}
-          />
-        ))}
-      </div>
-      <ExecutionRunbook items={stagedItems} />
+      {!run && status !== "loading" && status !== "starting" && status !== "running" && (
+        <RunEmptyState failed={status === "failed"} item="ranked optimization actions" />
+      )}
+      {run && !scopedRun && (
+        <p className="mb-4 border border-amber-6 bg-amber-2 px-4 py-3 text-xs leading-relaxed text-amber-11" role="status">
+          The selected account, platform, campaign, or attribution window was not included in this investigation. Run it again for the current selection to see relevant actions.
+        </p>
+      )}
+
+      {scopedRun && (
+        <>
+          {(status === "starting" || status === "running") && (
+            <p className="mb-4 font-mono text-[11px] uppercase tracking-wider text-iris-11">
+              Showing previous run · new investigation in progress
+            </p>
+          )}
+          <div className="mb-6 grid grid-cols-1 gap-px border border-slate-6 bg-slate-6 sm:grid-cols-3" data-testid="optimization-step-ledger">
+            <div className="bg-white px-4 py-3">
+              <p className="eyebrow text-iris-11">Step 01 · Portfolio MMM Equilibrium</p>
+              <p className="mt-0.5 text-xs text-slate-12">
+                Log-log response curves &amp; marginal ROAS frontier (+{money(scopedRun.portfolio?.revenue_lift ?? 0, currency, rate, true)}/wk)
+              </p>
+            </div>
+            <div className="bg-white px-4 py-3">
+              <p className="eyebrow text-jade-11">Step 02 · Interactive Simulator &amp; Staging</p>
+              <p className="mt-0.5 text-xs text-slate-12">
+                {stagedItems.length} of {items.length} prescriptions staged ({money(total, currency, rate, true)} 14d impact)
+              </p>
+            </div>
+            <div className="bg-white px-4 py-3">
+              <p className="eyebrow text-slate-12">Step 03 · Read-Only Execution Runbook</p>
+              <p className="mt-0.5 text-xs text-slate-12">Exportable Markdown &amp; bulk CSV specification with 48h guardrails</p>
+            </div>
+          </div>
+
+          {platform && (
+            <div className="mb-4 flex items-center justify-between border border-iris-6 bg-iris-2 px-4 py-2 text-xs text-iris-11">
+              <span>
+                Scoped to <strong>{PLATFORM_LABEL[platform]} Ads</strong> ({items.length} of {allItems.length} prescriptions)
+              </span>
+              <button type="button" onClick={() => update({ platform: null, accountId: null })} className="font-mono text-[10px] uppercase hover:underline">
+                Show all platforms
+              </button>
+            </div>
+          )}
+          <PortfolioOptimizer />
+          <ResponseCurveChart />
+          {items.length > 0 ? (
+            <div className="space-y-4">
+              {items.map((rx, i) => (
+                <PrescriptionCard
+                  key={`${scopedRun.run_id}-${rx.id}`}
+                  rx={rx}
+                  rank={i + 1}
+                  curves={scopedRun.curves ?? {}}
+                  staged={!excludedIds.includes(rx.id)}
+                  onToggleStaged={() => toggleStaged(rx.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="border border-slate-6 bg-white px-4 py-4 text-xs text-slate-11" role="status">
+              {allItems.length === 0 ? "This investigation did not produce any optimization actions." : "No optimization actions match this platform scope."}
+            </p>
+          )}
+          {items.length > 0 && <ExecutionRunbook items={stagedItems} />}
+        </>
+      )}
     </section>
   );
 }
