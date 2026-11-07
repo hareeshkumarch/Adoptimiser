@@ -20,7 +20,7 @@ SYNTHESIS_SYSTEM = (
     "You are the orchestrator of a read-only ad intelligence deep agent writing the cross-channel pacing narrative for a "
     "performance marketing lead. Plain prose, no markdown, no bullet points, 110-160 words, editorial and quantitative. "
     "Cover: overall pacing and blended efficiency, the verified root causes in order of dollar impact, what the critic filtered "
-    "out as false positives, and the single most important move this week. Use only the numbers given."
+    "out as false positives, and the single most important move this week, framed against the business_goal if one is given. Use only the numbers given."
 )
 
 

@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Activity, Bot, Menu, Plug, Stethoscope, Table2, TrendingUp, X } from "lucide-react";
+import { Activity, Bot, Compass, Lightbulb, Menu, Plug, Radar, Stethoscope, Table2, TrendingUp, X } from "lucide-react";
 import { cn } from "../../lib/cn";
 
+const START = [
+  { to: "/insights", label: "Smart suggestions", icon: Lightbulb },
+  { to: "/reach", label: "Reach & frequency", icon: Radar },
+];
 const NAV = [
-  { to: "/", label: "Overview", icon: Activity },
+  { to: "/overview", label: "Overview", icon: Activity },
   { to: "/diagnostics", label: "Diagnostics", icon: Stethoscope },
   { to: "/optimizations", label: "Optimizations", icon: TrendingUp },
   { to: "/drilldown", label: "Campaign explorer", icon: Table2 },
@@ -22,21 +26,31 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 function NavigationLinks({ mobile = false, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
   return (
     <>
-      <p className="eyebrow px-4 pb-2.5">Analyze</p>
+      <p className="eyebrow px-4 pb-2.5">Start here</p>
+      {START.map(({ to, label, icon: Icon }) => (
+        <NavLink key={to} to={to} onClick={onNavigate} className={linkClass} data-testid={`${mobile ? "mobile-" : ""}nav-${to.slice(1)}`}>
+          <Icon size={16} strokeWidth={1.75} />
+          {label}
+        </NavLink>
+      ))}
+      <p className="eyebrow px-4 pb-2.5 pt-7">Analyze</p>
       {NAV.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
           to={to}
-          end={to === "/"}
           onClick={onNavigate}
           className={linkClass}
-          data-testid={`${mobile ? "mobile-" : ""}nav-${to === "/" ? "overview" : to.slice(1)}`}
+          data-testid={`${mobile ? "mobile-" : ""}nav-${to.slice(1)}`}
         >
           <Icon size={16} strokeWidth={1.75} />
           {label}
         </NavLink>
       ))}
       <p className="eyebrow px-4 pb-2.5 pt-7">Workspace</p>
+      <NavLink to="/welcome" onClick={onNavigate} className={linkClass} data-testid={`${mobile ? "mobile-" : ""}nav-welcome`}>
+        <Compass size={16} strokeWidth={1.75} />
+        Change goal
+      </NavLink>
       {WORKSPACE.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}

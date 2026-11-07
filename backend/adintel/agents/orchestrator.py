@@ -14,6 +14,7 @@ from adintel.agents.subagents.forensics import ForensicsAgent
 from adintel.agents.subagents.ingestion import IngestionAgent
 from adintel.agents.subagents.optimizer import OptimizerAgent
 from adintel.analytics.metrics import jsonable
+from adintel.db import db
 
 class Orchestrator:
     name = "orchestrator"
@@ -191,8 +192,11 @@ class Orchestrator:
             tool="read_scratchpad",
             args={"paths": ["/router/intent.json", "/critic/confirmed.json", "/critic/rejected.json", "/deep_dive/counterfactuals.json", "/optimizer/prescriptions.json"]},
         )
+        brief = json.loads(self._brief(state))
+        ws = await db.workspace.find_one({"key": "default"}, {"_id": 0, "goal": 1, "target_roas": 1, "monthly_budget": 1}) or {}
+        brief["business_goal"] = ws
         parts = []
-        async for chunk in self.llm.stream(f"{state.run_id}:synthesis", SYNTHESIS_SYSTEM, self._brief(state)):
+        async for chunk in self.llm.stream(f"{state.run_id}:synthesis", SYNTHESIS_SYSTEM, json.dumps(brief)):
             parts.append(chunk)
             await state.emit("narrative_delta", self.name, delta=chunk)
         narrative = "".join(parts).strip()

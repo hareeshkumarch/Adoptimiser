@@ -241,12 +241,12 @@ export function DeepAgentProvider({ children }: { children: ReactNode }) {
     bootstrapped.current = true;
     dispatch({ type: "loading" });
     Promise.all([api.activeRun(), api.latestRun()]).then(([active, latest]) => {
+      if (runRequestInFlight.current) return;
       if (active) follow(active);
-      else if (latest) dispatch({ type: "loaded", run: latest });
-      else start(DEFAULT_QUERY);
+      else dispatch({ type: "loaded", run: latest });
     });
     return () => unsubscribe.current?.();
-  }, [start, follow]);
+  }, [follow]);
 
   return <DeepAgentContext.Provider value={{ ...state, start, selectRun }}>{children}</DeepAgentContext.Provider>;
 }

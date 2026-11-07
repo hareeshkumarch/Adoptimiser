@@ -7,7 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from adintel.config import get_settings
 from adintel.db import client, ensure_indexes
-from adintel.routers import analytics, connectors, deep_agent
+from adintel.routers import analytics, connectors, deep_agent, insights
 from adintel.sandbox.seed import ensure_sandbox
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -32,7 +32,7 @@ async def health():
     return {"status": "ok", "service": "quorum-adintel-backend"}
 
 
-for module in (analytics, deep_agent, connectors):
+for module in (analytics, deep_agent, connectors, insights):
     app.include_router(module.router)
 
 app.add_middleware(
