@@ -90,9 +90,41 @@ class TestReach:
         assert d["available"] is True
         assert all(a["platform"] == "meta" for a in d["adsets"])
 
-    def test_reach_unknown_account(self, s):
-        r = s.get(f"{API}/insights/reach", params={"account_id": "nope_000"})
-        assert r.status_code in (200, 404)
+    # iteration 2: unknown scope must be 404 (was 500)
+    @pytest.mark.parametrize("path,params", [
+        ("insights/reach", {"account_id": "nope_000"}),
+        ("insights/reach", {"platform": "foo"}),
+        ("insights/opportunities", {"account_id": "nope_000"}),
+        ("insights/opportunities", {"platform": "foo"}),
+        ("pulse", {"account_id": "nope_000"}),
+        ("pulse", {"platform": "foo"}),
+    ])
+    def test_unknown_scope_404(self, s, path, params):
+        r = s.get(f"{API}/{path}", params=params)
+        assert r.status_code == 404
+        assert "detail" in r.json()
+
+
+# --- iteration 2: budget opportunity uses workspace monthly_budget + formatted money ---
+class TestBudgetAndMoney:
+    def test_pacing_uses_workspace_budget(self, s):
+        s.put(f"{API}/workspace", json={"goal": "cut_waste", "business_name": "TEST_Biz", "target_roas": 3.0, "monthly_budget": 50000, "onboarded": True})
+        d = s.get(f"{API}/insights/opportunities").json()
+        pacing = [o for o in d["opportunities"] if o["id"] == "pacing-month"]
+        assert pacing, "expected pacing op with $50K budget"
+        print("PACING:", pacing[0]["why"])
+        assert "$50,000 budget" in pacing[0]["why"] or "$50.0K budget" in pacing[0]["why"]
+        # scoped -> workspace budget ignored
+        d2 = s.get(f"{API}/insights/opportunities", params={"platform": "meta"}).json()
+        for o in d2["opportunities"]:
+            if o["id"] == "pacing-month":
+                assert "$50.0K budget" not in o["why"]
+
+    def test_no_raw_usd_in_copy(self, s):
+        d = s.get(f"{API}/insights/opportunities").json()
+        for o in d["opportunities"]:
+            blob = json.dumps([o["title"], o["why"], o.get("evidence")])
+            assert " USD" not in blob, blob
 
 
 # --- Workspace ---
@@ -145,6 +177,9 @@ class TestCopilot:
         t2 = "".join(e.get("delta", "") for e in ev2 if e["type"] == "delta")
         assert len(t2) > 10
         assert "temporarily unavailable" not in text, "LLM fallback used"
+        # iteration 2: answer must not be truncated
+        assert text.rstrip()[-1] in ".!?)*`\"", f"truncated answer tail: {text[-120:]!r}"
+        assert t2.rstrip()[-1] in ".!?)*`\"", f"truncated followup tail: {t2[-120:]!r}"
 
     def test_ask_validation(self, s):
         r = s.post(f"{API}/insights/ask", json={"question": "x"})
@@ -175,3 +210,14 @@ class TestRegression:
                     break
             time.sleep(4)
         assert status == "completed", f"run status {status}"
+        run = s.get(f"{API}/deep-agent/runs/{rid}").json()["run"]
+        narrative = run.get("narrative") or ""
+        if not narrative:
+            for f in run.get("files", []):
+                if isinstance(f, dict) and f.get("path") == "/orchestrator/narrative.md":
+                    narrative = f.get("content") or ""
+        print("NARRATIVE TAIL:", narrative[-300:])
+        assert len(narrative) > 200
+        assert narrative.rstrip()[-1] in ".!?)*`\"", f"truncated narrative: {narrative[-150:]!r}"
+        low = narrative.lower()
+        assert "monthly budget" not in low or "weekly" in low, "narrative compares against monthly budget"

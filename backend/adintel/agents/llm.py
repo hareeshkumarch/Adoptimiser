@@ -11,7 +11,8 @@ from adintel.config import get_settings
 from adintel.agents.prompts import JSON_RESPONSE_SUFFIX
 
 logger = logging.getLogger(__name__)
-JSON_TIMEOUT = 12
+JSON_TIMEOUT = 14
+FAST_MODEL = "claude-haiku-4-5-20251001"
 LIVE_STREAM_TIMEOUT = 45
 
 
@@ -226,11 +227,11 @@ class LlmGateway:
     def live_enabled(self) -> bool:
         return bool(self._key)
 
-    def _chat(self, session_id: str, system: str, max_tokens: int = 4000) -> LlmChat:
-        return LlmChat(api_key=self._key, session_id=session_id, system_message=system).with_model("anthropic", self._model).with_params(max_tokens=max_tokens)
+    def _chat(self, session_id: str, system: str, max_tokens: int, model: str | None) -> LlmChat:
+        return LlmChat(api_key=self._key, session_id=session_id, system_message=system).with_model("anthropic", model or self._model).with_params(max_tokens=max_tokens)
 
-    async def stream_live(self, session_id: str, system: str, prompt: str, max_tokens: int = 4000) -> AsyncIterator[str]:
-        async for ev in self._chat(session_id, system, max_tokens).stream_message(UserMessage(text=prompt)):
+    async def stream_live(self, session_id: str, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> AsyncIterator[str]:
+        async for ev in self._chat(session_id, system, max_tokens, model).stream_message(UserMessage(text=prompt)):
             if isinstance(ev, TextDelta):
                 yield ev.content
             elif isinstance(ev, StreamDone):
@@ -240,7 +241,7 @@ class LlmGateway:
         if not self.live_enabled:
             return None
         async def collect() -> str:
-            return "".join([c async for c in self.stream_live(session_id, system, prompt)])
+            return "".join([c async for c in self.stream_live(session_id, system, prompt, 3000, FAST_MODEL)])
         try:
             return await asyncio.wait_for(collect(), timeout=timeout)
         except Exception as exc:

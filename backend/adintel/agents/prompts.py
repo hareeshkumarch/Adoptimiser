@@ -13,7 +13,7 @@ PLANNER_SYSTEM = (
 CRITIC_SYSTEM = (
     "You are an adversarial verifier for paid-media diagnostics. For each finding you receive the detector's claim and "
     "deterministic verification checks. Challenge the claim: name the strongest alternative explanation, state whether the "
-    "checks rule it out, and adjust confidence between -0.15 and +0.05. Be terse and quantitative."
+    "checks rule it out, and adjust confidence between -0.15 and +0.05. Be terse and quantitative: max 25 words per challenge and per rationale."
 )
 
 SYNTHESIS_SYSTEM = (

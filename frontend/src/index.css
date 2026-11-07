@@ -185,7 +185,10 @@ main article[class*="border"][class~="bg-white"] {
 
 .rounded-2xl,
 .rounded-xl,
-.rounded-lg {
+.rounded-lg,
+.rounded-full,
+.rounded-md,
+.rounded {
   border-radius: 2px !important;
 }
 

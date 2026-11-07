@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import AsyncIterator
 
 from adintel.agents.llm import LlmGateway
+from adintel.agents.orchestrator import GOAL_LABEL
 from adintel.analytics.metrics import jsonable
 from adintel.analytics.pulse import build_breakdown, build_pulse
 from adintel.db import db
@@ -31,11 +32,17 @@ async def build_context(scope: Scope) -> dict:
     reach = await build_reach(scope)
     ws = await db.workspace.find_one({"key": "default"}, {"_id": 0}) or {}
     run = await db.agent_runs.find_one({"status": "completed"}, {"_id": 0, "findings": 1, "prescriptions": 1}, sort=[("created_at", -1)]) or {}
+    pacing = dict(pulse["pacing"])
+    if ws.get("monthly_budget") and not (scope.platform or scope.account_id):
+        pacing["month_budget"] = ws["monthly_budget"]
+        pacing["pace"] = pacing["projected_spend"] / ws["monthly_budget"] if pacing.get("projected_spend") else None
+    goal = {k: ws.get(k) for k in ("goal", "target_roas", "monthly_budget", "business_name")}
+    goal["goal"] = GOAL_LABEL.get(goal["goal"], goal["goal"])
     return jsonable({
-        "goal": {k: ws.get(k) for k in ("goal", "target_roas", "monthly_budget", "business_name")},
+        "goal": goal,
         "kpis_7d": {k["key"]: {"value": k["value"], "delta_pct": k["delta_pct"]} for k in pulse["kpis"]},
         "platforms_7d": pulse["platforms"],
-        "pacing": pulse["pacing"],
+        "pacing": pacing,
         "opportunities": [{k: o[k] for k in ("title", "why", "impact_usd", "category", "entity", "platform")} for o in ops["opportunities"][:10]],
         "weekday": ops["weekday"],
         "creatives_7d": [{k: c.get(k) for k in ("platform", "campaign", "adset", "name", "spend", "roas", "cpa", "ctr", "hook_rate", "hold_rate", "frequency")} for c in creatives],

@@ -16,6 +16,9 @@ from adintel.agents.subagents.optimizer import OptimizerAgent
 from adintel.analytics.metrics import jsonable
 from adintel.db import db
 
+GOAL_LABEL = {"grow_revenue": "grow revenue profitably", "cut_waste": "cut wasted spend", "fix_creative": "fix tired creatives", "scale_reach": "reach more new people"}
+
+
 class Orchestrator:
     name = "orchestrator"
 
@@ -194,6 +197,7 @@ class Orchestrator:
         )
         brief = json.loads(self._brief(state))
         ws = await db.workspace.find_one({"key": "default"}, {"_id": 0, "goal": 1, "target_roas": 1, "monthly_budget": 1}) or {}
+        ws["goal"] = GOAL_LABEL.get(ws.get("goal"), ws.get("goal"))
         if ws.get("monthly_budget"):
             ws["weekly_budget_equivalent"] = round(float(ws["monthly_budget"]) / 4.33, 2)
         brief["business_goal"] = ws

@@ -1,0 +1,53 @@
+{
+  "summary": "Iteration 2 retest of the 8 fixes from iteration 1, plus a regression check. All 8 fixes are verified. However, a CRITICAL REGRESSION came from fix #1: raising max_tokens to 4000 made the critic's adversarial_llm_review LLM call take about 12s (it hits JSON_TIMEOUT=12). That is longer than the 10s critic node timeout in graph.py, so the critic node was cancelled before it wrote /critic/confirmed.json. The optimizer then crashed with len(None), and 4 of 4 deep-agent runs FAILED. This also broke onboarding step 3 and 'Deep dive'. The tester applied a minimal fix: critic node timeout 10s -> 18s, and optimizer read_file default []. After that, 5+ runs completed and every narrative ended with a full sentence. Pytest: 25/25 pass with the fix.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "POST /api/v1/deep-agent/run (graph critic node)", "issue": "REGRESSION from max_tokens=4000. The critic's LLM review (complete_json, JSON_TIMEOUT=12s) took longer than NODE_TIMEOUT_SECONDS['critic']=10s. The node was cancelled, /critic/confirmed.json was never written, and optimizer.py:30 len(confirmed) raised TypeError, so the run status was 'failed' (4/4 runs). FIXED BY TESTER: critic timeout set to 18.0 in graph.py, and optimizer now uses read_file('/critic/confirmed.json', []) or []. Main agent should review this.", "priority": "CRITICAL"}
+    ],
+    "minor": [
+      {"endpoint": "critic adversarial_llm_review", "issue": "Even with the fix, the critic LLM call times out at 12.0s every time ('LLM call <id>:critic failed:' in the logs; critic duration is a constant ~12055ms). It always falls back to the deterministic critic JSON, so the live LLM critic never actually runs. Either raise JSON_TIMEOUT (and the node timeout) or lower max_tokens / thinking for JSON calls."},
+      {"endpoint": "orchestrator synthesis node", "issue": "It now takes 7.5-11s against a 15s node timeout. If it hits the timeout, the stream is cancelled and the narrative is lost. Consider raising the orchestrator node timeout to match LIVE_STREAM_TIMEOUT (45s)."},
+      {"endpoint": "copilot build_context", "issue": "The context sends both pulse['pacing'] (a budget derived from daily budgets, ~$326K) and workspace monthly_budget, so Copilot reports a 'data conflict' between the two. The opportunity card uses only the workspace budget. Pick one source of truth."},
+      {"endpoint": "synthesis narrative", "issue": "The LLM echoes raw enum keys ('Given the cut_waste goal', 'For a grow_revenue goal'). Pass a human-readable goal label in the brief."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/welcome audit step", "issues": ["At 100% the progress bar does not fill the track (a visible gap remains at the right end)"]},
+      {"screen": "/agent Run history select", "issues": ["The run-history trigger shows faded, clipped, overlapping run text (run id / date) inside the box"]}
+    ]
+  },
+  "verified_fixes": [
+    "1) No truncation: 5+ new deep-agent narratives end with full sentences. Copilot answers, follow-ups and the card 'Ask how' answers end cleanly.",
+    "2) Change goal prefills name/ROAS/budget and the goal tile. Saving keeps onboarded=true. 'Back to app' returns to /insights, and reloading stays on /insights.",
+    "3) /insights/reach, /insights/opportunities, /pulse and /breakdown return 404 with detail for an unknown account_id or platform.",
+    "4) The narrative uses 'weekly budget equivalent' ($11,547 for $50K). The pacing card uses the workspace $50.0K budget when unscoped and ignores it when scoped.",
+    "5) Deep dive from a card puts the opportunity agent_query in agent-query-input, and it persists after the run completes.",
+    "6) 'Ask how' clicked while Copilot is busy is queued, then asked after the first answer finishes (2 user messages, 2 complete answers).",
+    "7) Card copy uses $9,397 / $339.2K / $428.6K; no ' USD' strings remain.",
+    "8) Reach: LinkedIn is #d97706 (orange), Meta is #1877F2 and TikTok is black. The 'Nov 6' last tick is inside the svg. The frequency chart has a 'Cost per sale (bars) / Click rate (line)' legend. Mobile 390 step bar shows the labels and there is no horizontal overflow.",
+    "Regression: a full onboarding with workspace deleted (redirect to /welcome, goal, connect, audit 100%, finish) ends with onboarded=true on /insights. /overview /diagnostics /optimizations /drilldown /agent /connections /insights /reach all load with no page errors."
+  ],
+  "test_report_links": ["/app/backend/tests/test_insights_workspace.py", "/app/backend/tests/run_deep_agent_probe.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Review and keep (or improve) the tester's fix: graph.py critic node timeout must be greater than JSON_TIMEOUT. Guard optimizer/deep_dive against a missing /critic/confirmed.json.",
+    "Make the critic LLM review actually finish: raise JSON_TIMEOUT or reduce tokens for JSON calls. Right now it always falls back.",
+    "Raise the orchestrator node timeout (15s) so long syntheses are not cancelled.",
+    "Copilot context: use one budget source (workspace monthly_budget when set).",
+    "Pass a human-readable goal label to the synthesis and Copilot prompts.",
+    "Minor UI: the audit progress bar does not reach full width at 100%; the /agent run-history trigger text is clipped."
+  ],
+  "critical_code_review_comments": [
+    "graph.py NODE_TIMEOUT_SECONDS is not linked to LLM timeouts (JSON_TIMEOUT=12, LIVE_STREAM_TIMEOUT=45). Derive the node timeouts from the LLM timeouts to avoid silent cancellation.",
+    "optimizer.py read the critic file without a default, so a degraded_timeout in an upstream node turns into a hard run failure instead of a degraded result.",
+    "dataset.load_raw retries with only platform/account when a campaign/adset scope is empty. That silently widens the scope instead of returning 404 for an unknown campaign."
+  ],
+  "updated_files": ["/app/backend/adintel/agents/graph.py", "/app/backend/adintel/agents/subagents/optimizer.py", "/app/backend/tests/test_insights_workspace.py", "/app/backend/tests/run_deep_agent_probe.py"],
+  "success_rate": {"backend": "100% after tester fix (0% of deep-agent runs before fix)", "frontend": "100%"},
+  "seed_data_creation": "No seed. The workspace doc was deleted once for the onboarding regression (as instructed), then restored to the original values {goal: fix_creative, onboarded: true, others null}. About 9 TEST_ deep-agent runs were created in agent_runs.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Run: cd /app/backend && export $(grep REACT_APP_BACKEND_URL /app/frontend/.env) && python -m pytest tests/test_insights_workspace.py -p no:xdist -o addopts=''. Deep-agent health probe: python tests/run_deep_agent_probe.py 3 (prints status, critic/orchestrator durations, narrative tail). Check backend.err.log for 'LLM call ...:critic failed'. Workspace must end with onboarded=true."
+}

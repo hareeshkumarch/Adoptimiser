@@ -115,7 +115,7 @@ function RunMeta() {
           <Select.Root value={run?.run_id ?? ""} onValueChange={selectRun} disabled={busy}>
             <Select.Trigger
               aria-label="Choose an investigation run"
-              className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-5 bg-white px-3.5 text-left text-slate-12 outline-none transition-colors focus:border-jade-8 disabled:cursor-not-allowed disabled:opacity-50 sm:w-[260px]"
+              className="flex min-h-11 w-full py-1.5 items-center justify-between gap-3 rounded-xl border border-slate-5 bg-white px-3.5 text-left text-slate-12 outline-none transition-colors focus:border-jade-8 disabled:cursor-not-allowed disabled:opacity-50 sm:w-[260px]"
               data-testid="agent-run-history-select"
             >
               <Select.Value placeholder="Choose a run" />
