@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import AsyncIterator
@@ -10,6 +11,8 @@ from adintel.db import db
 from adintel.insights.opportunities import build_opportunities
 from adintel.insights.reach import build_reach
 from adintel.models import Scope
+
+logger = logging.getLogger(__name__)
 
 COPILOT_SYSTEM = (
     "You are Quorum Copilot, a senior performance-marketing strategist with READ-ONLY access to the user's ad accounts "
@@ -62,14 +65,15 @@ async def ask_stream(llm: LlmGateway, question: str, scope: Scope, thread_id: st
     yield {"type": "status", "label": "Thinking"}
     parts: list[str] = []
     try:
-        async for chunk in llm.stream_live(f"copilot:{thread_id}", COPILOT_SYSTEM, prompt, max_tokens=1400):
+        async for chunk in llm.stream_live(f"copilot:{thread_id}", COPILOT_SYSTEM, prompt, max_tokens=4000):
             parts.append(chunk)
             yield {"type": "delta", "delta": chunk}
-    except Exception:
-        if not parts:
-            text = _fallback(question, ctx)
-            parts.append(text)
-            yield {"type": "delta", "delta": text}
+    except Exception as exc:
+        logger.warning("copilot stream %s failed after %d chunks: %s", thread_id, len(parts), exc)
+    if not "".join(parts).strip():
+        text = _fallback(question, ctx)
+        parts = [text]
+        yield {"type": "delta", "delta": text}
     answer = "".join(parts)
     now = datetime.now(timezone.utc).isoformat()
     await db.copilot_messages.insert_many([

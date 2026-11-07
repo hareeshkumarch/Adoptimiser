@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { ArrowRight, BadgeDollarSign, Clapperboard, Scissors, Users } from "lucide-react";
-import { GOALS, type Goal } from "../../lib/insights";
+import { GOALS, type Goal, type Workspace } from "../../lib/insights";
 
 const ICONS: Record<Goal, typeof Users> = { grow_revenue: BadgeDollarSign, cut_waste: Scissors, fix_creative: Clapperboard, scale_reach: Users };
 
-interface Props { initial?: Goal; onNext: (v: { goal: Goal; business_name: string; target_roas: number | null; monthly_budget: number | null }) => void; saving: boolean }
+interface Props { initial?: Workspace; onNext: (v: { goal: Goal; business_name: string; target_roas: number | null; monthly_budget: number | null }) => void; saving: boolean }
 
 export function GoalStep({ initial, onNext, saving }: Props) {
-  const [goal, setGoal] = useState<Goal | null>(initial ?? null);
-  const [name, setName] = useState("");
-  const [roas, setRoas] = useState("");
-  const [budget, setBudget] = useState("");
+  const [goal, setGoal] = useState<Goal | null>(initial?.goal ?? null);
+  const [name, setName] = useState(initial?.business_name ?? "");
+  const [roas, setRoas] = useState(initial?.target_roas != null ? String(initial.target_roas) : "");
+  const [budget, setBudget] = useState(initial?.monthly_budget != null ? String(initial.monthly_budget) : "");
   return (
     <div className="space-y-7" data-testid="goal-step">
       <div>

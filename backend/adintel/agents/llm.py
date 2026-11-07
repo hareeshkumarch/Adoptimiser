@@ -226,10 +226,10 @@ class LlmGateway:
     def live_enabled(self) -> bool:
         return bool(self._key)
 
-    def _chat(self, session_id: str, system: str, max_tokens: int = 900) -> LlmChat:
+    def _chat(self, session_id: str, system: str, max_tokens: int = 4000) -> LlmChat:
         return LlmChat(api_key=self._key, session_id=session_id, system_message=system).with_model("anthropic", self._model).with_params(max_tokens=max_tokens)
 
-    async def stream_live(self, session_id: str, system: str, prompt: str, max_tokens: int = 900) -> AsyncIterator[str]:
+    async def stream_live(self, session_id: str, system: str, prompt: str, max_tokens: int = 4000) -> AsyncIterator[str]:
         async for ev in self._chat(session_id, system, max_tokens).stream_message(UserMessage(text=prompt)):
             if isinstance(ev, TextDelta):
                 yield ev.content

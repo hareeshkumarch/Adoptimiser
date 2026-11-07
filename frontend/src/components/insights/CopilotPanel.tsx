@@ -42,12 +42,12 @@ export function CopilotPanel({ seed, onSeedUsed }: { seed?: string | null; onSee
   };
 
   useEffect(() => {
-    if (seed) {
-      ask(seed);
+    if (seed && !busy) {
       onSeedUsed?.();
+      ask(seed);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seed]);
+  }, [seed, busy]);
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });

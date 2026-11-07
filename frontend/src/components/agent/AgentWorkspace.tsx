@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown, CornerDownLeft, GitCommit, History } from "lucide-react";
@@ -18,8 +18,11 @@ const TAB =
   "border-b-2 border-transparent px-4 py-3 font-mono text-[11px] uppercase tracking-wider text-slate-11 transition-colors hover:text-slate-12 data-[state=active]:border-jade-9 data-[state=active]:text-slate-12";
 
 function QueryBox() {
-  const { start, status } = useDeepAgent();
-  const [query, setQuery] = useState(DEFAULT_QUERY);
+  const { start, status, activeQuery } = useDeepAgent();
+  const [query, setQuery] = useState(activeQuery || DEFAULT_QUERY);
+  useEffect(() => {
+    if (activeQuery) setQuery(activeQuery);
+  }, [activeQuery]);
   const busy = status === "loading" || status === "starting" || status === "running";
   const submit = () => !busy && query.trim() && start(query.trim());
   return (

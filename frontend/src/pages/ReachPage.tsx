@@ -5,7 +5,7 @@ import { money, num, pct, PLATFORM_LABEL, shortDate, signedPct } from "../lib/fo
 import { PlatformLogo } from "../components/common/PlatformLogo";
 import type { ReachResponse } from "../lib/insights";
 
-const PLAT_COLOR: Record<string, string> = { meta: "#1877F2", tiktok: "#141a15", linkedin: "#0A66C2", google: "#34A853" };
+const PLAT_COLOR: Record<string, string> = { meta: "#1877F2", tiktok: "#141a15", linkedin: "#d97706", google: "#34A853" };
 const STATUS_STYLE: Record<string, string> = { Saturated: "bg-ruby-9 text-white", Tiring: "bg-amber-9 text-slate-12", "Room to grow": "bg-jade-9 text-white" };
 const compact = (v: number) => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v);
 const TOOLTIP = { contentStyle: { borderRadius: 0, border: "1px solid #141a15", fontSize: 11, fontFamily: "JetBrains Mono" } };
@@ -45,7 +45,8 @@ function SweetSpot({ d }: { d: ReachResponse }) {
         </div>
         {s.penalty != null && <p className="max-w-xs text-right text-[12px] text-slate-11" data-testid="reach-sweet-spot-note">At {s.worst_bucket} views, each sale costs <span className="num font-semibold text-ruby-11">{money(s.worst_cpa, currency, rate)}</span> vs <span className="num font-semibold text-jade-11">{money(s.cpa, currency, rate)}</span>. Cap frequency near {s.bucket}.</p>}
       </div>
-      <div className="mt-4 h-60">
+      <div className="mt-3 flex gap-4 text-[11px] text-slate-11"><span className="flex items-center gap-1.5"><span className="h-2 w-3 bg-slate-12" />Cost per sale (bars)</span><span className="flex items-center gap-1.5"><span className="h-[2px] w-3 bg-jade-9" />Click rate (line)</span></div>
+      <div className="mt-2 h-60">
         <ResponsiveContainer>
           <ComposedChart data={d.curve} margin={{ left: 0, right: 8, top: 8 }}>
             <CartesianGrid stroke="#e6e9e2" vertical={false} />
@@ -69,7 +70,7 @@ function Trend({ d }: { d: ReachResponse }) {
       <p className="eyebrow">Frequency trend by platform (30d)</p>
       <div className="mt-4 h-60">
         <ResponsiveContainer>
-          <LineChart data={d.trend} margin={{ left: 0, right: 8, top: 8 }}>
+          <LineChart data={d.trend} margin={{ left: 0, right: 28, top: 8 }}>
             <CartesianGrid stroke="#e6e9e2" vertical={false} />
             <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fontSize: 10, fontFamily: "JetBrains Mono" }} minTickGap={24} />
             <YAxis tick={{ fontSize: 10, fontFamily: "JetBrains Mono" }} width={32} />

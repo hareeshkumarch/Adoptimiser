@@ -9,11 +9,11 @@ export function WelcomeSteps({ step }: { step: number }) {
         const done = i < step;
         const active = i === step;
         return (
-          <li key={s} className={`flex items-center gap-3 px-4 py-3 ${i > 0 ? "border-l border-slate-12" : ""} ${active ? "bg-slate-12 text-white" : done ? "bg-jade-2" : ""}`} data-testid={`welcome-step-${i + 1}`}>
+          <li key={s} className={`flex items-center gap-2 px-2.5 py-3 sm:gap-3 sm:px-4 ${i > 0 ? "border-l border-slate-12" : ""} ${active ? "bg-slate-12 text-white" : done ? "bg-jade-2" : ""}`} data-testid={`welcome-step-${i + 1}`}>
             <span className={`flex h-6 w-6 shrink-0 items-center justify-center border font-mono text-[11px] ${active ? "border-jade-8 text-jade-8" : done ? "border-jade-9 bg-jade-9 text-white" : "border-slate-8 text-slate-10"}`}>
               {done ? <Check size={12} /> : i + 1}
             </span>
-            <span className={`hidden text-[13px] font-medium sm:block ${active ? "" : done ? "text-jade-11" : "text-slate-10"}`}>{s}</span>
+            <span className={`text-[11px] font-medium sm:text-[13px] ${active ? "" : done ? "text-jade-11" : "text-slate-10"}`}>{s}</span>
           </li>
         );
       })}

@@ -194,7 +194,10 @@ class Orchestrator:
         )
         brief = json.loads(self._brief(state))
         ws = await db.workspace.find_one({"key": "default"}, {"_id": 0, "goal": 1, "target_roas": 1, "monthly_budget": 1}) or {}
+        if ws.get("monthly_budget"):
+            ws["weekly_budget_equivalent"] = round(float(ws["monthly_budget"]) / 4.33, 2)
         brief["business_goal"] = ws
+        brief["period_note"] = "platform_last7d figures are 7-day totals; compare them only with weekly_budget_equivalent, never with monthly_budget."
         parts = []
         async for chunk in self.llm.stream(f"{state.run_id}:synthesis", SYNTHESIS_SYSTEM, json.dumps(brief)):
             parts.append(chunk)

@@ -20,7 +20,8 @@ export default function WelcomePage() {
   const saveGoal = async (v: { goal: Goal; business_name: string; target_roas: number | null; monthly_budget: number | null }) => {
     setSaving(true);
     try {
-      await insightsApi.saveWorkspace({ ...v, business_name: v.business_name || null, onboarded: false });
+      await insightsApi.saveWorkspace({ ...v, business_name: v.business_name || null, onboarded: ws?.onboarded ?? false });
+      await qc.invalidateQueries({ queryKey: ["workspace"] });
       setGoal(v.goal);
       setStep(1);
     } catch {
@@ -55,7 +56,7 @@ export default function WelcomePage() {
         )}
         <WelcomeSteps step={step} />
         <div key={step} className="mt-8 animate-fade-up border border-slate-12 bg-white p-5 sm:p-8">
-          {step === 0 && <GoalStep initial={goal ?? undefined} onNext={saveGoal} saving={saving} />}
+          {step === 0 && <GoalStep key={ws ? "ws" : "none"} initial={ws} onNext={saveGoal} saving={saving} />}
           {step === 1 && <ConnectStep onBack={() => setStep(0)} onNext={() => setStep(2)} />}
           {step === 2 && <AuditStep query={GOALS.find((g) => g.key === goal)?.query ?? GOALS[1].query} onFinish={finish} />}
         </div>
