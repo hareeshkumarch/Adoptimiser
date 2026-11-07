@@ -40,3 +40,16 @@ docker compose up --build -d
 - **Frontend (Nginx + SSE Reverse Proxy)**: `http://localhost:8080` (`GET /healthz`)
 - **Backend (FastAPI + LangGraph)**: `http://localhost:8000` (`GET /api/v1/health`)
 - **MongoDB 7.0**: `mongodb://localhost:27017`
+
+## 3. GitHub CI/CD
+
+GitHub Actions runs the backend integration suite on pull requests and pushes to `main`. Pull requests also build both production images without publishing them. A successful push to `main` publishes `ghcr.io/<owner>/quorum-backend` and `ghcr.io/<owner>/quorum-frontend` with `main`, `latest`, and commit SHA tags. Pushing a `v*` tag publishes that release tag and its commit SHA. Publishing uses the workflow's `GITHUB_TOKEN`; no registry secret is required.
+
+To deploy the published images with Compose, set `GHCR_OWNER` and `IMAGE_TAG` in `.env`, then pull and start the services:
+
+```bash
+docker compose pull backend frontend
+docker compose up -d --no-build
+```
+
+For private GHCR packages, authenticate on the deployment host with a GitHub token that has `read:packages` access before pulling. Use a version tag for repeatable releases; `latest` follows successful builds from `main`.

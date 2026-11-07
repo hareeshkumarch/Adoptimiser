@@ -15,6 +15,7 @@ services:
       start_period: 15s
 
   backend:
+    image: ghcr.io/${GHCR_OWNER:-hareeshkumarch}/quorum-backend:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -46,6 +47,7 @@ services:
       start_period: 20s
 
   frontend:
+    image: ghcr.io/${GHCR_OWNER:-hareeshkumarch}/quorum-frontend:${IMAGE_TAG:-latest}
     build:
       context: ./frontend
       dockerfile: Dockerfile
