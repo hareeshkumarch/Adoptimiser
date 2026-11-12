@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useReducer, useRef, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
 import { api, subscribeRun } from "../lib/api";
 import { DEFAULT_AGENT_QUERY } from "../constants/prompts";
 import { useFilters } from "./filters";
@@ -180,12 +180,14 @@ function reducer(state: State, action: Action): State {
 interface DeepAgentValue extends State {
   start: (query: string) => void;
   selectRun: (runId: string) => void;
+  activeQuery: string | null;
 }
 
 const DeepAgentContext = createContext<DeepAgentValue | null>(null);
 
 export function DeepAgentProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL);
+  const [activeQuery, setActiveQuery] = useState<string | null>(null);
   const filters = useFilters();
   const unsubscribe = useRef<(() => void) | null>(null);
   const runRequestInFlight = useRef(false);
@@ -211,6 +213,7 @@ export function DeepAgentProvider({ children }: { children: ReactNode }) {
     (query: string) => {
       if (runRequestInFlight.current) return;
       runRequestInFlight.current = true;
+      setActiveQuery(query);
       dispatch({ type: "starting" });
       const body = {
         query,
@@ -227,6 +230,7 @@ export function DeepAgentProvider({ children }: { children: ReactNode }) {
 
   const selectRun = useCallback((runId: string) => {
     runRequestInFlight.current = false;
+    setActiveQuery(null);
     unsubscribe.current?.();
     dispatch({ type: "loading" });
     api.getRun(runId).then(
@@ -241,14 +245,14 @@ export function DeepAgentProvider({ children }: { children: ReactNode }) {
     bootstrapped.current = true;
     dispatch({ type: "loading" });
     Promise.all([api.activeRun(), api.latestRun()]).then(([active, latest]) => {
+      if (runRequestInFlight.current) return;
       if (active) follow(active);
-      else if (latest) dispatch({ type: "loaded", run: latest });
-      else start(DEFAULT_QUERY);
+      else dispatch({ type: "loaded", run: latest });
     });
     return () => unsubscribe.current?.();
-  }, [start, follow]);
+  }, [follow]);
 
-  return <DeepAgentContext.Provider value={{ ...state, start, selectRun }}>{children}</DeepAgentContext.Provider>;
+  return <DeepAgentContext.Provider value={{ ...state, start, selectRun, activeQuery }}>{children}</DeepAgentContext.Provider>;
 }
 
 export function useDeepAgent(): DeepAgentValue {

@@ -23,7 +23,7 @@ class OptimizerAgent(SubAgent):
             lambda: solve_portfolio_allocation(curves, 0.30),
             lambda p: f"optimal reallocation lifts weekly revenue +${p['revenue_lift']:,.0f} ({p['base_roas']:.2f}x → {p['optimal_roas']:.2f}x)",
         )
-        confirmed = state.read_file("/critic/confirmed.json")
+        confirmed = state.read_file("/critic/confirmed.json", []) or []
         prescriptions = await state.call_tool(
             self.name,
             "rank_prescriptions",

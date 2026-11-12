@@ -1,4 +1,5 @@
 import pandas as pd
+from fastapi import HTTPException
 
 from adintel.db import db
 from adintel.models import Account, Scope
@@ -16,6 +17,8 @@ async def load_raw(scope: Scope) -> pd.DataFrame:
     rows = await db.metrics_daily.find(scope.query(), {"_id": 0}).to_list(None)
     if not rows:
         rows = await db.metrics_daily.find(Scope(platform=scope.platform, account_id=scope.account_id).query(), {"_id": 0}).to_list(None)
+    if not rows:
+        raise HTTPException(404, "No ad data for this account or platform")
     frame = pd.DataFrame(rows)
     frame["date"] = pd.to_datetime(frame["date"])
     return frame

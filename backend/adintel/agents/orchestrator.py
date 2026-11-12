@@ -14,6 +14,10 @@ from adintel.agents.subagents.forensics import ForensicsAgent
 from adintel.agents.subagents.ingestion import IngestionAgent
 from adintel.agents.subagents.optimizer import OptimizerAgent
 from adintel.analytics.metrics import jsonable
+from adintel.db import db
+
+GOAL_LABEL = {"grow_revenue": "grow revenue profitably", "cut_waste": "cut wasted spend", "fix_creative": "fix tired creatives", "scale_reach": "reach more new people"}
+
 
 class Orchestrator:
     name = "orchestrator"
@@ -191,8 +195,15 @@ class Orchestrator:
             tool="read_scratchpad",
             args={"paths": ["/router/intent.json", "/critic/confirmed.json", "/critic/rejected.json", "/deep_dive/counterfactuals.json", "/optimizer/prescriptions.json"]},
         )
+        brief = json.loads(self._brief(state))
+        ws = await db.workspace.find_one({"key": "default"}, {"_id": 0, "goal": 1, "target_roas": 1, "monthly_budget": 1}) or {}
+        ws["goal"] = GOAL_LABEL.get(ws.get("goal"), ws.get("goal"))
+        if ws.get("monthly_budget"):
+            ws["weekly_budget_equivalent"] = round(float(ws["monthly_budget"]) / 4.33, 2)
+        brief["business_goal"] = ws
+        brief["period_note"] = "platform_last7d figures are 7-day totals; compare them only with weekly_budget_equivalent, never with monthly_budget."
         parts = []
-        async for chunk in self.llm.stream(f"{state.run_id}:synthesis", SYNTHESIS_SYSTEM, self._brief(state)):
+        async for chunk in self.llm.stream(f"{state.run_id}:synthesis", SYNTHESIS_SYSTEM, json.dumps(brief)):
             parts.append(chunk)
             await state.emit("narrative_delta", self.name, delta=chunk)
         narrative = "".join(parts).strip()

@@ -42,9 +42,9 @@ def get_settings() -> Settings:
         mongo_url=env.get("MONGO_URL") or "mongodb://localhost:27017",
         db_name=env.get("DB_NAME") or "adintel",
         cors_origins=[origin.strip() for origin in cors_raw.split(",") if origin.strip()] or ["*"],
-        llm_key=env.get("LLM_API_KEY") or env.get("ANTHROPIC_API_KEY") or env.get("OPENAI_API_KEY") or "",
+        llm_key=env.get("EMERGENT_LLM_KEY") or "",
         llm_provider=env.get("LLM_PROVIDER") or "anthropic",
-        llm_model=env.get("LLM_MODEL") or "claude-sonnet-4-20250514",
+        llm_model=env.get("LLM_MODEL") or "claude-sonnet-5-5",
         public_base_url=(env.get("PUBLIC_BASE_URL") or "http://localhost:8080").rstrip("/"),
         token_key=_valid_fernet_key(env.get("TOKEN_ENCRYPTION_KEY")),
     )

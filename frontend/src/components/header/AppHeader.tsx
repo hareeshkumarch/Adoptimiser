@@ -27,8 +27,8 @@ export function AppHeader() {
     <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-1 border-b border-slate-5 bg-white/95 px-3 py-2 backdrop-blur-sm sm:gap-3 sm:px-6" data-testid="app-header">
       <div className="flex items-center gap-2.5">
         <MobileNavDrawer />
-        <Link to="/" className="flex items-center gap-3" aria-label="Quorum home" data-testid="brand-home-link">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-12 font-serif text-lg font-medium text-white">Q</span>
+        <Link to="/insights" className="flex items-center gap-3" aria-label="Quorum home" data-testid="brand-home-link">
+          <span className="flex h-9 w-9 items-center justify-center bg-slate-12 font-serif text-lg font-medium text-white">Q</span>
           <span className="hidden leading-tight min-[420px]:block">
             <span className="block font-serif text-[20px] font-medium tracking-tight">Quorum</span>
             <span className="hidden font-mono text-[9px] font-medium uppercase tracking-[0.16em] text-slate-10 sm:block">Ad intelligence</span>

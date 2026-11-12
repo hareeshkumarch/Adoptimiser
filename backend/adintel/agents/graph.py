@@ -38,15 +38,15 @@ NODE_VISIT_BUDGETS: dict[str, int] = {
 
 NODE_TIMEOUT_SECONDS: dict[str, float] = {
     "router": 5.0,
-    "planner": 8.0,
+    "planner": 16.0,
     "ingestion": 12.0,
     "anomaly": 10.0,
     "attribution": 10.0,
     "forensics": 12.0,
-    "critic": 10.0,
+    "critic": 20.0,
     "deep_dive": 12.0,
     "optimizer": 10.0,
-    "orchestrator": 15.0,
+    "orchestrator": 50.0,
 }
 
 STAGE_CATALOG: dict[str, tuple[int, int, str]] = {

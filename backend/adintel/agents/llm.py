@@ -3,10 +3,17 @@ import json
 import re
 from typing import AsyncIterator
 
-import httpx
+import logging
+
+from emergentintegrations.llm.chat import LlmChat, StreamDone, TextDelta, UserMessage
 
 from adintel.config import get_settings
 from adintel.agents.prompts import JSON_RESPONSE_SUFFIX
+
+logger = logging.getLogger(__name__)
+JSON_TIMEOUT = 14
+FAST_MODEL = "claude-haiku-4-5-20251001"
+LIVE_STREAM_TIMEOUT = 45
 
 
 def classify_query_intent(query: str) -> dict:
@@ -214,56 +221,58 @@ class LlmGateway:
     def __init__(self):
         settings = get_settings()
         self._key = settings.llm_key
-        self._provider = settings.llm_provider
         self._model = settings.llm_model
 
     @property
     def live_enabled(self) -> bool:
-        return bool(self._key and not self._key.startswith("mock"))
+        return bool(self._key)
 
-    async def _call_remote(self, system: str, prompt: str) -> str | None:
+    def _chat(self, session_id: str, system: str, max_tokens: int, model: str | None) -> LlmChat:
+        return LlmChat(api_key=self._key, session_id=session_id, system_message=system).with_model("anthropic", model or self._model).with_params(max_tokens=max_tokens)
+
+    async def stream_live(self, session_id: str, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> AsyncIterator[str]:
+        async for ev in self._chat(session_id, system, max_tokens, model).stream_message(UserMessage(text=prompt)):
+            if isinstance(ev, TextDelta):
+                yield ev.content
+            elif isinstance(ev, StreamDone):
+                break
+
+    async def _call_remote(self, system: str, prompt: str, session_id: str, timeout: float) -> str | None:
         if not self.live_enabled:
             return None
+        async def collect() -> str:
+            return "".join([c async for c in self.stream_live(session_id, system, prompt, 3000, FAST_MODEL)])
         try:
-            async with httpx.AsyncClient(timeout=20) as client:
-                if self._provider == "anthropic":
-                    r = await client.post(
-                        "https://api.anthropic.com/v1/messages",
-                        headers={"x-api-key": self._key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                        json={"model": self._model, "max_tokens": 900, "system": system, "messages": [{"role": "user", "content": prompt}]},
-                    )
-                    if r.status_code == 200:
-                        data = r.json()
-                        return "".join(block.get("text", "") for block in data.get("content", []))
-                else:
-                    r = await client.post(
-                        "https://api.openai.com/v1/chat/completions",
-                        headers={"Authorization": f"Bearer {self._key}", "Content-Type": "application/json"},
-                        json={
-                            "model": self._model,
-                            "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-                        },
-                    )
-                    if r.status_code == 200:
-                        return r.json()["choices"][0]["message"]["content"]
-        except Exception:
+            return await asyncio.wait_for(collect(), timeout=timeout)
+        except Exception as exc:
+            logger.warning("LLM call %s failed: %s", session_id, exc)
             return None
-        return None
 
     async def stream(self, session_id: str, system: str, prompt: str) -> AsyncIterator[str]:
-        remote_text = await self._call_remote(system, prompt)
-        text = remote_text if remote_text else _deterministic_narrative(prompt)
+        emitted = False
+        if self.live_enabled:
+            try:
+                async with asyncio.timeout(LIVE_STREAM_TIMEOUT):
+                    async for chunk in self.stream_live(session_id, system, prompt):
+                        emitted = True
+                        yield chunk
+                if emitted:
+                    return
+            except Exception as exc:
+                logger.warning("LLM stream %s failed: %s", session_id, exc)
+                if emitted:
+                    return
+        text = _deterministic_narrative(prompt)
         words = text.split(" ")
-        chunk_size = 6
-        for idx in range(0, len(words), chunk_size):
-            piece = " ".join(words[idx: idx + chunk_size])
-            if idx + chunk_size < len(words):
+        for idx in range(0, len(words), 6):
+            piece = " ".join(words[idx: idx + 6])
+            if idx + 6 < len(words):
                 piece += " "
             yield piece
             await asyncio.sleep(0.01)
 
     async def complete_json(self, session_id: str, system: str, prompt: str) -> dict:
-        remote_text = await self._call_remote(system + JSON_RESPONSE_SUFFIX, prompt)
+        remote_text = await self._call_remote(system + JSON_RESPONSE_SUFFIX, prompt, session_id, JSON_TIMEOUT)
         if remote_text:
             match = re.search(r"\{.*\}", remote_text, re.DOTALL)
             if match:

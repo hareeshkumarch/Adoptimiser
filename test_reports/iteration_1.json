@@ -1,0 +1,47 @@
+{
+  "summary": "Tested the new onboarding, Insights/Copilot and Reach features from end to end (pytest: 17 of 18 pass; Playwright on desktop 1920 and mobile 390). Almost everything works: the onboarding gate, all 3 onboarding steps (goal saved, LinkedIn demo account linked with a toast, live audit done in about 23s, then /insights with onboarded=true), opportunity tabs with correct counts, Ask/Deep dive buttons, Copilot starters and follow-ups in one thread, the Reach page (totals, curve, trend, table, Google 'unavailable' message, account scoping), the old routes and sidebar nav, sharp corners with offset-shadow hovers, and no page-level horizontal overflow at 390px. Main problems: (1) LLM output is often cut off mid-sentence because max_tokens is too low for claude-sonnet-5-5; (2) 'Change goal' sets onboarded=false and wipes the saved business name, ROAS and budget; (3) an unknown account_id or platform returns 500 on every scoped analytics endpoint.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "LlmGateway (backend/adintel/agents/llm.py _chat/stream_live) -> deep-agent synthesis narrative + POST /api/v1/insights/ask", "issue": "max_tokens is too low for claude-sonnet-5-5 (the model uses hidden reasoning tokens). In a direct probe at max_tokens=900, 5 of 5 calls ended with finish_reason='length' and produced 0 text; at 3000, 5 of 5 ended with 'stop' and complete text. In stored data, 3 of the last 5 agent narratives are cut mid-sentence (e.g. '...UK Retail Buyers at $10,997, Broad LAL'), and Copilot answers (max_tokens=1400) are cut too (e.g. '...fatiguing at 3.9x frequency, so'). An empty reply silently drops to the deterministic fallback.", "priority": "HIGH"}
+    ],
+    "minor": [
+      {"endpoint": "GET /api/v1/insights/reach, /insights/opportunities, /pulse with an unknown account_id or platform (e.g. ?account_id=nope, ?platform=foo)", "issue": "Returns 500 with KeyError 'date' in adintel/analytics/dataset.py load_raw (line 20) when the filtered frame is empty. It should return an empty or 'unavailable' payload, or a 404/400."},
+      {"endpoint": "deep-agent synthesis brief", "issue": "The narrative compares 7-day portfolio spend ($84.6K) with the user's MONTHLY budget ($50K) ('running well above the $50,000 monthly budget'). The prompt mixes time periods. Meanwhile the Budget opportunity card uses a different budget (353,994 USD) and ignores the workspace monthly_budget."},
+      {"endpoint": "insights/copilot.py ask_stream", "issue": "Errors after the first chunk are swallowed with a bare except and nothing is logged, so partial answers are saved as complete."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "WelcomePage 'Change goal' flow (nav-welcome)", "issue": "saveGoal always sends onboarded:false, and GoalStep only prefills the goal (name/ROAS/budget start empty). An already-onboarded user who changes the goal and then clicks 'Back to app' (or just leaves) loses business_name/target_roas/monthly_budget and is forced back to /welcome on the next reload. Reproduced: workspace became {goal:scale_reach, onboarded:false, business_name:null}, and reloading /insights redirected to /welcome.", "selector": "[data-testid='goal-continue-button'], [data-testid='welcome-skip-button']", "priority": "HIGH"}
+    ],
+    "integration_issues": [
+      {"flow": "Insights 'Deep dive' -> /agent", "issue": "The run starts with the opportunity's agent_query, but the /agent textarea still shows the default 'Full Cross-Channel Audit' chip and query text, so the request on screen does not match the running investigation.", "affected_selectors": ["[data-testid$='-investigate']"]},
+      {"flow": "CopilotPanel seed", "issue": "If a card's 'Ask how' is clicked while Copilot is busy, ask() returns early and the seed is cleared, so the question is silently dropped.", "affected_selectors": ["[data-testid$='-ask']"]}
+    ],
+    "design_issues": [
+      {"screen": "/reach frequency trend", "issues": ["Meta and LinkedIn lines/legend use nearly the same blue, so they are hard to tell apart", "The last x-axis tick label ('Nov 6') is clipped at the right edge", "The frequency vs cost-per-sale chart has no legend saying the bars are CPA and the line is CTR"]},
+      {"screen": "/insights cards", "issues": ["Card copy shows raw unformatted money ('Spending 11,715 USD/week', 'Projected month spend 373,001 USD') while the rest of the UI uses the currency formatter ($15.6K)"]},
+      {"screen": "Mobile 390px", "issues": ["The onboarding step bar shows only the numbers 1/2/3 with no labels", "The header account switcher label is truncated ('COMBINE… / All platfor…')"]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_insights_workspace.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Raise max_tokens for claude-sonnet-5-5 to about 3000-4000 (default in LlmGateway._chat/stream_live and the copilot call), or turn off extended thinking. Then check that narratives and Copilot answers end with finish_reason='stop'.",
+    "Change goal: keep onboarded=true when the workspace is already onboarded (or only set false on first-time onboarding), and prefill business name/ROAS/budget in GoalStep from the saved workspace.",
+    "Handle an empty frame in dataset.load_raw (unknown account_id/platform) so it does not return 500.",
+    "Use the same period for spend and budget in the synthesis brief (MTD/projected month vs monthly_budget), and use the workspace monthly_budget in the Budget opportunity.",
+    "Minor: sync the /agent textarea with the query started from Deep dive; queue or block Ask while Copilot is busy; give LinkedIn a distinct colour in the trend chart; use the money formatter in opportunity copy."
+  ],
+  "critical_code_review_comments": [
+    "copilot.ask_stream: a bare 'except Exception' with no logging hides LLM failures and truncation.",
+    "WelcomePage: useState(ws?.goal) only uses the workspace on the first render. It works when the workspace is cached but is fragile; derive it from ws or reset it in an effect.",
+    "WelcomePage.saveGoal does not invalidate the 'workspace' query, so the client still has onboarded=true while the server has false."
+  ],
+  "updated_files": ["/app/backend/tests/test_insights_workspace.py"],
+  "success_rate": {"backend": "94% (17/18)", "frontend": "90%"},
+  "seed_data_creation": "During the Step 2 test I linked the LinkedIn demo account li_810294 (connection 35b762085ebf). Afterwards I removed it with DELETE /api/v1/connections/35b762085ebf (its metrics_daily rows are gone). For the gate test I deleted the workspace doc. The workspace is now restored to its original state: goal=fix_creative, onboarded=true, other fields null. Some deep-agent runs and copilot_messages created by testing remain.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "No auth. Run pytest without xdist flags conflicts: 'cd /app/backend && export $(grep REACT_APP_BACKEND_URL /app/frontend/.env) && python -m pytest tests/test_insights_workspace.py'. Account ids: act_221048 (meta), 123-456-7890 (google), tt_7088213 (tiktok), li_503318 (linkedin). Unlinked demo candidates: act_884920, 904-112-3381, tt_9920411, li_810294. To reset onboarding: mongosh adintel db.workspace.deleteMany({key:'default'}). Restore it afterwards via PUT /api/v1/workspace with onboarded=true. Check narrative truncation in agent_runs.files path /orchestrator/narrative.md.",
+  "rca of the issue": "Truncation: /tmp/llm_probe.py called LlmChat.stream_message with with_params(max_tokens=900). The StreamDone finish_reason was 'length' with 0-150 visible words, because claude-sonnet-5-5 spends part of the budget on hidden reasoning. With max_tokens=3000 it was always 'stop'. Change-goal reset: WelcomePage.saveGoal hard-codes onboarded:false, and GoalStep useState('') for name/roas/budget means the PUT overwrites the saved values with null."
+}

@@ -15,12 +15,12 @@ export function ResponseCurveChart() {
   const [selected, setSelected] = useState<Platform | null>(null);
 
   const curves = run?.curves ?? {};
-  const availablePlatforms = PLATFORMS.filter((platform) => curves[platform]?.grid.length);
+  const availablePlatforms = PLATFORMS.filter((platform) => curves[platform]?.grid?.length);
   const activePlatform = selected && availablePlatforms.includes(selected) ? selected : availablePlatforms[0];
   if (!activePlatform) return null;
   const activeCurve = curves[activePlatform];
-  if (!activeCurve?.grid.length) return null;
-  const grid = activeCurve.grid;
+  if (!activeCurve?.grid?.length) return null;
+  const grid = activeCurve.grid ?? [];
 
   const chartData = grid.map((pt) => ({
     ...pt,

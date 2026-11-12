@@ -79,7 +79,7 @@ export default function ConnectionsPage() {
         </button>
       </div>
       <FlowStepBar
-        next={{ to: "/", index: "01", label: "Executive Pulse", hint: "Return to overview" }}
+        next={{ to: "/insights", index: "01", label: "Smart suggestions", hint: "See what to do next" }}
       />
     </div>
   );
